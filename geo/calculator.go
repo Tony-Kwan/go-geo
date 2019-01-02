@@ -7,7 +7,7 @@ type Calculator interface {
 
 	Bearing(from, to *Point) float64
 
-	PointOnBearing(from *Point, distDeg, bearingDeg float64, ctx GeoContext) *Point
+	PointOnBearing(from *Point, distRad, bearingDeg float64, ctx GeoContext) *Point
 
 	Area(s Shape) float64
 }

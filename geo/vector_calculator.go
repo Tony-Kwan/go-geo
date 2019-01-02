@@ -1,8 +1,12 @@
 package geo
 
 import (
-	"github.com/go-errors/errors"
+	"errors"
 	. "math"
+)
+
+var (
+	nNorth = &vector3{x: 0, y: 0, z: 1}
 )
 
 type VectorCalculator struct {
@@ -62,6 +66,14 @@ func (v *vector3) plus(u *vector3) *vector3 {
 	}
 }
 
+func (v *vector3) times(t float64) *vector3 {
+	return &vector3{
+		x: t * v.x,
+		y: t * v.y,
+		z: t * v.z,
+	}
+}
+
 func (v *vector3) crossProduct(u *vector3) (p *vector3) {
 	p = &vector3{
 		x: v.y*u.z - v.z*u.y,
@@ -73,6 +85,11 @@ func (v *vector3) crossProduct(u *vector3) (p *vector3) {
 
 func (v *vector3) dotProduct(u *vector3) float64 {
 	return v.x*u.x + v.y*u.y + v.z*u.z
+}
+
+func (v *vector3) angleTo(u, n *vector3) float64 {
+	sign := sign(v.crossProduct(u).dotProduct(n))
+	return Atan2(v.crossProduct(u).norm()*float64(sign), v.dotProduct(u))
 }
 
 func (p *Point) greatCircle(bearingDeg float64) *vector3 {
@@ -111,12 +128,31 @@ func (vc *VectorCalculator) DistanceXY(fromX, fromY, toX, toY float64) float64 {
 	return vc.Distance(NewPoint(fromX, fromY, nil), NewPoint(toX, toY, nil))
 }
 
-func (VectorCalculator) Bearing(from, to *Point) float64 {
-	return 0 //TODO:impl
+func (vc *VectorCalculator) Mid(from, to *Point, ctx GeoContext) *Point {
+	if from.Equals(to) {
+		return from.clone().(*Point)
+	}
+	return vc.meanPosition(from, to)
 }
 
-func (VectorCalculator) PointOnBearing(from *Point, distDeg, bearingDeg float64, ctx GeoContext) *Point {
-	return nil //TODO:impl
+func (VectorCalculator) Bearing(from, to *Point) float64 {
+	nFrom, nTo := newNE(from.X(), from.Y()), newNE(to.X(), to.Y())
+	c1, c2 := nFrom.crossProduct(nTo), nFrom.crossProduct(nNorth)
+	bearing := c1.angleTo(c2, nFrom)
+	return Mod(ToDegrees(bearing)+360., 360.)
+}
+
+func (VectorCalculator) PointOnBearing(from *Point, distRad, bearingDeg float64, ctx GeoContext) *Point {
+	nFrom := newNEWithPoint(from)
+	bearing := ToRadians(bearingDeg)
+	de := nNorth.crossProduct(nFrom).unit()
+	dn := nFrom.crossProduct(de)
+	deSin := de.times(Sin(bearing))
+	dnCos := dn.times(Cos(bearing))
+	d := dnCos.plus(deSin)
+	x := nFrom.times(Cos(distRad))
+	y := d.times(Sin(distRad))
+	return newPoint(x.plus(y))
 }
 
 func (VectorCalculator) Area(s Shape) float64 {
@@ -130,8 +166,6 @@ func (vc *VectorCalculator) MinCoverCircle(points ...*Point) (*Circle, error) {
 		return nil, errors.New("empty points")
 	}
 
-	sphereCalc := &SphereCalculator{} //TODO: use VectorCalculator instead of SphereCalculator
-
 	ps := make([]*Point, n)
 	copy(ps, points)
 	//rand.Shuffle(n, func(i, j int) {
@@ -144,8 +178,8 @@ func (vc *VectorCalculator) MinCoverCircle(points ...*Point) (*Circle, error) {
 			c, r = ps[i], 0.
 			for j := 0; j < i; j++ {
 				if vc.Distance(ps[j], c) > r {
-					c := sphereCalc.Mid(ps[i], ps[j], nil)
-					r := vc.Distance(c, ps[j])
+					c = vc.Mid(ps[i], ps[j], nil)
+					r = vc.Distance(c, ps[j])
 					for k := 0; k < j; k++ {
 						if vc.Distance(ps[k], c) > r {
 							c, err = vc.Circumcenter(ps[i], ps[j], ps[k])
@@ -166,32 +200,20 @@ func (vc *VectorCalculator) Circumcenter(p1, p2, p3 *Point) (*Point, error) {
 	//v := &vector2{x: p2.X() - p1.X(), y: p2.Y() - p1.Y()}
 	//u := &vector2{x: p3.X() - p1.X(), y: p3.Y() - p1.Y()}
 	//cross := v.cross(u)
-	//var bearingOffset float64
 	//if Abs(cross) < E12 {
 	//	return nil, fmt.Errorf("3点共线: p1=%v, p2=%v, p3=%v", p1, p2, p3)
 	//} else if cross < 0 { //CW
-	//	bearingOffset = -90
 	//} else { //CCW
-	//	bearingOffset = -90
-	//}
-	//fmt.Println(bearingOffset)
-
-	sphereCalc := &SphereCalculator{} //TODO: use VectorCalculator instead of SphereCalculator
-	p12Mid, p23Mid := sphereCalc.Mid(p1, p2, nil), sphereCalc.Mid(p2, p3, nil)
-	//crs12Mid4 := sphereCalc.Bearing(p12Mid, p2)+bearingOffset
-	//crs23Mid4 := sphereCalc.Bearing(p23Mid, p3)+bearingOffset
-	//p4, err := vc.Intersection(p12Mid, crs12Mid4, p23Mid, crs23Mid4) //TODO:
-	//if err != nil {
-	//	return nil, err
 	//}
 
-	crs12Mid2 := sphereCalc.Bearing(p12Mid, p2)
-	crs23Mid3 := sphereCalc.Bearing(p23Mid, p3)
+	p12Mid, p23Mid := vc.Mid(p1, p2, nil), vc.Mid(p2, p3, nil)
+	crs12Mid2 := vc.Bearing(p12Mid, p2)
+	crs23Mid3 := vc.Bearing(p23Mid, p3)
 	p4, err := vc.IntersectionOfTwoPath(
-		sphereCalc.PointOnBearing(p12Mid, ToRadians(10), crs12Mid2-90, nil),
-		sphereCalc.PointOnBearing(p12Mid, ToRadians(10), crs12Mid2+90, nil),
-		sphereCalc.PointOnBearing(p23Mid, ToRadians(10), crs23Mid3-90, nil),
-		sphereCalc.PointOnBearing(p23Mid, ToRadians(10), crs23Mid3+90, nil),
+		vc.PointOnBearing(p12Mid, ToRadians(90-E6), crs12Mid2-90, nil),
+		vc.PointOnBearing(p12Mid, ToRadians(90-E6), crs12Mid2+90, nil),
+		vc.PointOnBearing(p23Mid, ToRadians(90-E6), crs23Mid3-90, nil),
+		vc.PointOnBearing(p23Mid, ToRadians(90-E6), crs23Mid3+90, nil),
 	)
 	if err != nil {
 		return nil, err
