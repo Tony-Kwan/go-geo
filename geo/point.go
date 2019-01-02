@@ -3,6 +3,7 @@ package geo
 import (
 	"fmt"
 	"github.com/paulsmith/gogeos/geos"
+	"strconv"
 )
 
 type Point struct {
@@ -46,7 +47,11 @@ func (p *Point) clone() Shape {
 }
 
 func (p *Point) String() string {
-	return fmt.Sprintf("POINT (%v %v)", p.coord.X, p.coord.Y)
+	return fmt.Sprintf(
+		"POINT (%s %s)",
+		strconv.FormatFloat(p.coord.X, 'f', -1, 64),
+		strconv.FormatFloat(p.coord.Y, 'f', -1, 64),
+	)
 }
 
 func (p *Point) Equals(other *Point) bool {

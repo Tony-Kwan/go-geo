@@ -1,7 +1,7 @@
 package geo
 
 import (
-	"errors"
+	"github.com/go-errors/errors"
 	. "math"
 )
 
@@ -12,11 +12,19 @@ type vector3 struct {
 	x, y, z float64
 }
 
+type vector2 struct {
+	x, y float64
+}
+
 func newNE(lngDeg, latDeg float64) *vector3 {
 	lng, lat := ToRadians(lngDeg), ToRadians(latDeg)
 	sinLng, cosLng := Sin(lng), Cos(lng)
 	sinLat, cosLat := Sin(lat), Cos(lat)
 	return &vector3{x: cosLat * cosLng, y: cosLat * sinLng, z: sinLat}
+}
+
+func newNEWithPoint(point *Point) *vector3 {
+	return newNE(point.X(), point.Y())
 }
 
 func newPoint(nE *vector3) *Point {
@@ -77,19 +85,24 @@ func (p *Point) greatCircle(bearingDeg float64) *vector3 {
 	}
 }
 
+func (v *vector2) cross(u *vector2) float64 {
+	return v.x*u.y - u.x*v.y
+}
+
 //======================================================================================================================
 
-func (VectorCalculator) meanPosition(nEs ...*vector3) *vector3 {
+func (VectorCalculator) meanPosition(points ...*Point) *Point {
 	nM := &vector3{}
-	for _, nE := range nEs {
+	for _, point := range points {
+		nE := newNEWithPoint(point)
 		nM.x += nE.x
 		nM.y += nE.y
 		nM.z += nE.z
 	}
-	return nM.unit()
+	return newPoint(nM.unit())
 }
 
-func (vc *VectorCalculator) Distance(from, to *Point) float64 {
+func (VectorCalculator) Distance(from, to *Point) float64 {
 	nFrom, nTo := newNE(from.X(), from.Y()), newNE(to.X(), to.Y())
 	return Atan2(nFrom.crossProduct(nTo).norm(), nFrom.dotProduct(nTo))
 }
@@ -111,24 +124,111 @@ func (VectorCalculator) Area(s Shape) float64 {
 	return sphereCalc.Area(s)
 }
 
-func (VectorCalculator) Intersection(pa *Point, brng1 float64, pb *Point, brng2 float64) (*Point, error) {
-	p1, p2 := newNE(pa.X(), pa.Y()), newNE(pb.X(), pb.Y())
-	c1, c2 := pa.greatCircle(brng1), pb.greatCircle(brng2)
-	i1, i2 := c1.crossProduct(c2), c2.crossProduct(c1)
-	dir1 := sign(c1.crossProduct(p1).dotProduct(i1))
-	dir2 := sign(c2.crossProduct(p2).dotProduct(i1))
-	switch dir1 + dir2 {
-	case 2:
-		return newPoint(i1), nil
-	case -2:
-		return newPoint(i2), nil
-	case 0:
-		if p1.plus(p2).dotProduct(i1) > 0 {
-			return newPoint(i2), nil
-		} else {
-			return newPoint(i1), nil
-		}
-	default:
-		return nil, errors.New("program should not run here")
+func (vc *VectorCalculator) MinCoverCircle(points ...*Point) (*Circle, error) {
+	n := len(points)
+	if n == 0 {
+		return nil, errors.New("empty points")
 	}
+
+	sphereCalc := &SphereCalculator{} //TODO: use VectorCalculator instead of SphereCalculator
+
+	ps := make([]*Point, n)
+	copy(ps, points)
+	//rand.Shuffle(n, func(i, j int) {
+	//	ps[i], ps[j] = ps[j], ps[i]
+	//})
+	c, r := ps[0], 0.
+	var err error
+	for i := 1; i < n; i++ {
+		if vc.Distance(ps[i], c) > r {
+			c, r = ps[i], 0.
+			for j := 0; j < i; j++ {
+				if vc.Distance(ps[j], c) > r {
+					c := sphereCalc.Mid(ps[i], ps[j], nil)
+					r := vc.Distance(c, ps[j])
+					for k := 0; k < j; k++ {
+						if vc.Distance(ps[k], c) > r {
+							c, err = vc.Circumcenter(ps[i], ps[j], ps[k])
+							if err != nil {
+								return nil, err
+							}
+							r = Max(vc.Distance(c, ps[k]), Max(vc.Distance(c, ps[i]), vc.Distance(c, ps[j])))
+						}
+					}
+				}
+			}
+		}
+	}
+	return NewCircle(c.X(), c.Y(), r, nil), nil
+}
+
+func (vc *VectorCalculator) Circumcenter(p1, p2, p3 *Point) (*Point, error) {
+	//v := &vector2{x: p2.X() - p1.X(), y: p2.Y() - p1.Y()}
+	//u := &vector2{x: p3.X() - p1.X(), y: p3.Y() - p1.Y()}
+	//cross := v.cross(u)
+	//var bearingOffset float64
+	//if Abs(cross) < E12 {
+	//	return nil, fmt.Errorf("3点共线: p1=%v, p2=%v, p3=%v", p1, p2, p3)
+	//} else if cross < 0 { //CW
+	//	bearingOffset = -90
+	//} else { //CCW
+	//	bearingOffset = -90
+	//}
+	//fmt.Println(bearingOffset)
+
+	sphereCalc := &SphereCalculator{} //TODO: use VectorCalculator instead of SphereCalculator
+	p12Mid, p23Mid := sphereCalc.Mid(p1, p2, nil), sphereCalc.Mid(p2, p3, nil)
+	//crs12Mid4 := sphereCalc.Bearing(p12Mid, p2)+bearingOffset
+	//crs23Mid4 := sphereCalc.Bearing(p23Mid, p3)+bearingOffset
+	//p4, err := vc.Intersection(p12Mid, crs12Mid4, p23Mid, crs23Mid4) //TODO:
+	//if err != nil {
+	//	return nil, err
+	//}
+
+	crs12Mid2 := sphereCalc.Bearing(p12Mid, p2)
+	crs23Mid3 := sphereCalc.Bearing(p23Mid, p3)
+	p4, err := vc.IntersectionOfTwoPath(
+		sphereCalc.PointOnBearing(p12Mid, ToRadians(10), crs12Mid2-90, nil),
+		sphereCalc.PointOnBearing(p12Mid, ToRadians(10), crs12Mid2+90, nil),
+		sphereCalc.PointOnBearing(p23Mid, ToRadians(10), crs23Mid3-90, nil),
+		sphereCalc.PointOnBearing(p23Mid, ToRadians(10), crs23Mid3+90, nil),
+	)
+	if err != nil {
+		return nil, err
+	}
+	return p4, nil
+}
+
+//func (VectorCalculator) Intersection(pa *Point, brng1 float64, pb *Point, brng2 float64) (*Point, error) {
+//	p1, p2 := newNE(pa.X(), pa.Y()), newNE(pb.X(), pb.Y())
+//	c1, c2 := pa.greatCircle(brng1), pb.greatCircle(brng2)
+//	i1, i2 := c1.crossProduct(c2), c2.crossProduct(c1)
+//	dir1 := sign(c1.crossProduct(p1).dotProduct(i1))
+//	dir2 := sign(c2.crossProduct(p2).dotProduct(i1))
+//	switch dir1 + dir2 {
+//	case 2:
+//		return newPoint(i1), nil
+//	case -2:
+//		return newPoint(i2), nil
+//	case 0:
+//		if p1.plus(p2).dotProduct(i1) > 0 {
+//			return newPoint(i2), nil
+//		} else {
+//			return newPoint(i1), nil
+//		}
+//	default:
+//		return nil, fmt.Errorf("program should not run here: pa=%v, brng1=%f, pb=%v, brng2=%f", pa, brng1, pb, brng2)
+//	}
+//}
+
+func (VectorCalculator) IntersectionOfTwoPath(pa1, pa2, pb1, pb2 *Point) (*Point, error) {
+	p1, p2 := newNE(pa1.X(), pa1.Y()), newNE(pb1.X(), pb1.Y())
+	p11, p22 := newNE(pa2.X(), pa2.Y()), newNE(pb2.X(), pb2.Y())
+	c1, c2 := p1.crossProduct(p11), p2.crossProduct(p22)
+	i1, i2 := c1.crossProduct(c2), c2.crossProduct(c1)
+	mid := p1.plus(p2).plus(p11).plus(p22)
+	if mid.dotProduct(i1) > 0 {
+		return newPoint(i1), nil
+	}
+	return newPoint(i2), nil
 }
