@@ -31,6 +31,10 @@ func (c *Circle) GetCenter() *Point {
 	return c.center.clone().(*Point)
 }
 
+func (c *Circle) GetRadius() float64 {
+	return c.radius
+}
+
 func (c *Circle) clone() Shape {
 	return NewCircle(c.center.X(), c.center.Y(), c.radius, c.ctx)
 }
