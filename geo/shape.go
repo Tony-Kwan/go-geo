@@ -1,16 +1,10 @@
 package geo
 
-import (
-	"github.com/paulsmith/gogeos/geos"
-)
-
 var (
 	unitRadius = 1.0
 )
 
 type Shape interface {
-	ToGeos() (*geos.Geometry, error)
-
 	GetArea() float64
 
 	GetCenter() *Point
@@ -22,10 +16,6 @@ type Shape interface {
 
 type AbstractShape struct {
 	ctx GeoContext
-}
-
-func (*AbstractShape) ToGeos() (*geos.Geometry, error) {
-	return nil, ErrUnsupportedOperation
 }
 
 func (*AbstractShape) GetArea() float64 {

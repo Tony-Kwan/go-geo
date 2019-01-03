@@ -2,36 +2,32 @@ package geo
 
 import (
 	"fmt"
-	"github.com/paulsmith/gogeos/geos"
 	"strconv"
 )
 
 type Point struct {
 	AbstractShape
 
-	coord geos.Coord
+	x float64
+	y float64
 }
 
 func NewPoint(x, y float64, ctx GeoContext) *Point {
-	p := &Point{coord: geos.NewCoord(x, y)}
+	p := &Point{x: x, y: y}
 	p.ctx = ctx
 	return p
 }
 
 func (p *Point) X() float64 {
-	return p.coord.X
+	return p.x
 }
 
 func (p *Point) Y() float64 {
-	return p.coord.Y
+	return p.y
 }
 
 func (p *Point) Reset(x, y float64) {
-	p.coord.X, p.coord.Y = x, y
-}
-
-func (p *Point) ToGeos() (*geos.Geometry, error) {
-	return geos.NewPoint(geos.NewCoord(p.coord.X, p.coord.Y))
+	p.x, p.y = x, y
 }
 
 func (p *Point) GetCenter() *Point {
@@ -43,14 +39,14 @@ func (*Point) GetArea() float64 {
 }
 
 func (p *Point) clone() Shape {
-	return NewPoint(p.coord.X, p.coord.Y, p.ctx)
+	return NewPoint(p.x, p.y, p.ctx)
 }
 
 func (p *Point) String() string {
 	return fmt.Sprintf(
 		"POINT (%s %s)",
-		strconv.FormatFloat(p.coord.X, 'f', -1, 64),
-		strconv.FormatFloat(p.coord.Y, 'f', -1, 64),
+		strconv.FormatFloat(p.x, 'f', -1, 64),
+		strconv.FormatFloat(p.y, 'f', -1, 64),
 	)
 }
 

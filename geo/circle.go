@@ -2,7 +2,6 @@ package geo
 
 import (
 	"fmt"
-	"github.com/paulsmith/gogeos/geos"
 	"strconv"
 )
 
@@ -17,10 +16,6 @@ func NewCircle(x, y, radiusDeg float64, ctx GeoContext) *Circle {
 	c := &Circle{center: NewPoint(x, y, ctx), radius: radiusDeg}
 	c.ctx = ctx
 	return c
-}
-
-func (c *Circle) ToGeos() (*geos.Geometry, error) {
-	return nil, ErrUnsupportedOperation
 }
 
 func (c *Circle) GetArea() float64 {
