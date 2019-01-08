@@ -15,7 +15,7 @@ func TestVectorCalculator_LngLat2nE(t *testing.T) {
 }
 
 func TestVectorCalculator_nE2Lnglat(t *testing.T) {
-	ll := newPoint(newNE(0, 90))
+	ll := newNE(0, 90).toPoint()
 	fmt.Println(ll)
 }
 

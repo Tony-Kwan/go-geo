@@ -54,5 +54,5 @@ func (p *Point) Equals(other *Point) bool {
 	if p == other {
 		return true
 	}
-	return false //TODO: impl this func
+	return p.x == other.x && p.y == other.y && p.ctx == other.ctx
 }
