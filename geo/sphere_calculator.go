@@ -60,14 +60,25 @@ func (c *SphereCalculator) Mid(from, to *Point, ctx GeoContext) *Point {
 func (c *SphereCalculator) Area(s Shape) float64 {
 	switch s.(type) {
 	case *Circle:
-		return areaOfCircle(s.(*Circle))
+		return c.areaOfCircle(s.(*Circle))
+	case *Rectangle:
+		return c.areaOfRectangle(s.(*Rectangle))
 	default:
 		erro.Printf("unsupported shape type: %+v\n", s)
 		return -1
 	}
 }
 
-func areaOfCircle(circle *Circle) float64 {
+func (c *SphereCalculator) areaOfCircle(circle *Circle) float64 {
 	lat := ToRadians(90 - circle.radius)
 	return 2 * Pi * unitRadius * unitRadius * (1 - Sin(lat))
+}
+
+func (c *SphereCalculator) areaOfRectangle(rect *Rectangle) float64 {
+	w := rect.maxX - rect.minX
+	if w < 0 {
+		w += 360.
+	}
+	minLat, maxLat := ToRadians(rect.minY), ToRadians(rect.maxY)
+	return Pi / 180. * unitRadius * unitRadius * Abs(Sin(minLat)-Sin(maxLat)) * w
 }
