@@ -37,10 +37,10 @@ func (v *nVector) unit() *nVector {
 }
 
 func (v *nVector) norm() float64 {
-	return Sqrt(v.x*v.x + v.y*v.y + v.z*v.z)
+	return Sqrt(v.dot(v))
 }
 
-func (v *nVector) plus(u *nVector) *nVector {
+func (v *nVector) add(u *nVector) *nVector {
 	return &nVector{
 		x: v.x + u.x,
 		y: v.y + u.y,
@@ -56,7 +56,7 @@ func (v *nVector) times(t float64) *nVector {
 	}
 }
 
-func (v *nVector) crossProduct(u *nVector) *nVector {
+func (v *nVector) cross(u *nVector) *nVector {
 	return &nVector{
 		x: v.y*u.z - v.z*u.y,
 		y: -(v.x*u.z - v.z*u.x),
@@ -64,13 +64,13 @@ func (v *nVector) crossProduct(u *nVector) *nVector {
 	}
 }
 
-func (v *nVector) dotProduct(u *nVector) float64 {
+func (v *nVector) dot(u *nVector) float64 {
 	return v.x*u.x + v.y*u.y + v.z*u.z
 }
 
 func (v *nVector) angleTo(u, n *nVector) float64 {
-	sign := sign(v.crossProduct(u).dotProduct(n))
-	return Atan2(v.crossProduct(u).norm()*float64(sign), v.dotProduct(u))
+	sign := sign(v.cross(u).dot(n))
+	return Atan2(v.cross(u).norm()*float64(sign), v.dot(u))
 }
 
 func (p *Point) greatCircle(bearingDeg float64) *nVector {

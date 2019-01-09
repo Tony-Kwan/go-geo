@@ -22,7 +22,7 @@ func (VectorCalculator) meanPosition(points ...*Point) *Point {
 
 func (VectorCalculator) Distance(from, to *Point) float64 {
 	nFrom, nTo := newNE(from.X(), from.Y()), newNE(to.X(), to.Y())
-	return Atan2(nFrom.crossProduct(nTo).norm(), nFrom.dotProduct(nTo))
+	return Atan2(nFrom.cross(nTo).norm(), nFrom.dot(nTo))
 }
 
 func (vc *VectorCalculator) DistanceXY(fromX, fromY, toX, toY float64) float64 {
@@ -38,7 +38,7 @@ func (vc *VectorCalculator) Mid(from, to *Point, ctx GeoContext) *Point {
 
 func (VectorCalculator) Bearing(from, to *Point) float64 {
 	nFrom, nTo := newNE(from.X(), from.Y()), newNE(to.X(), to.Y())
-	c1, c2 := nFrom.crossProduct(nTo), nFrom.crossProduct(nNorth)
+	c1, c2 := nFrom.cross(nTo), nFrom.cross(nNorth)
 	bearing := c1.angleTo(c2, nFrom)
 	return Mod(ToDegrees(bearing)+360., 360.)
 }
@@ -46,14 +46,14 @@ func (VectorCalculator) Bearing(from, to *Point) float64 {
 func (VectorCalculator) PointOnBearing(from *Point, distRad, bearingDeg float64, ctx GeoContext) *Point {
 	nFrom := newNEWithPoint(from)
 	bearing := ToRadians(bearingDeg)
-	de := nNorth.crossProduct(nFrom).unit()
-	dn := nFrom.crossProduct(de)
+	de := nNorth.cross(nFrom).unit()
+	dn := nFrom.cross(de)
 	deSin := de.times(Sin(bearing))
 	dnCos := dn.times(Cos(bearing))
-	d := dnCos.plus(deSin)
+	d := dnCos.add(deSin)
 	x := nFrom.times(Cos(distRad))
 	y := d.times(Sin(distRad))
-	return x.plus(y).toPoint()
+	return x.add(y).toPoint()
 }
 
 func (VectorCalculator) Area(s Shape) float64 {
@@ -116,10 +116,10 @@ func (vc *VectorCalculator) Circumcenter(p1, p2, p3 *Point) (*Point, error) {
 func (VectorCalculator) IntersectionOfTwoPath(pa1, pa2, pb1, pb2 *Point) (*Point, error) {
 	p1, p2 := newNE(pa1.X(), pa1.Y()), newNE(pb1.X(), pb1.Y())
 	p11, p22 := newNE(pa2.X(), pa2.Y()), newNE(pb2.X(), pb2.Y())
-	c1, c2 := p1.crossProduct(p11), p2.crossProduct(p22)
-	i1, i2 := c1.crossProduct(c2), c2.crossProduct(c1)
-	mid := p1.plus(p2).plus(p11).plus(p22)
-	if mid.dotProduct(i1) > 0 {
+	c1, c2 := p1.cross(p11), p2.cross(p22)
+	i1, i2 := c1.cross(c2), c2.cross(c1)
+	mid := p1.add(p2).add(p11).add(p22)
+	if mid.dot(i1) > 0 {
 		return i1.toPoint(), nil
 	}
 	return i2.toPoint(), nil
