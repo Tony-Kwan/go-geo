@@ -10,7 +10,7 @@ type VectorCalculator struct {
 }
 
 func (VectorCalculator) meanPosition(points ...*Point) *Point {
-	nM := &nVector{}
+	nM := &vector3{}
 	for _, point := range points {
 		nE := newNEWithPoint(point)
 		nM.x += nE.x
@@ -48,16 +48,15 @@ func (VectorCalculator) PointOnBearing(from *Point, distRad, bearingDeg float64,
 	bearing := ToRadians(bearingDeg)
 	de := nNorth.cross(nFrom).unit()
 	dn := nFrom.cross(de)
-	deSin := de.times(Sin(bearing))
-	dnCos := dn.times(Cos(bearing))
+	deSin := de.mul(Sin(bearing))
+	dnCos := dn.mul(Cos(bearing))
 	d := dnCos.add(deSin)
-	x := nFrom.times(Cos(distRad))
-	y := d.times(Sin(distRad))
+	x := nFrom.mul(Cos(distRad))
+	y := d.mul(Sin(distRad))
 	return x.add(y).toPoint()
 }
 
 func (VectorCalculator) Area(s Shape) float64 {
-	sphereCalc := &SphereCalculator{}
 	return sphereCalc.Area(s)
 }
 
@@ -113,7 +112,7 @@ func (vc *VectorCalculator) Circumcenter(p1, p2, p3 *Point) (*Point, error) {
 	return p4, nil
 }
 
-func (VectorCalculator) IntersectionOfTwoPath(pa1, pa2, pb1, pb2 *Point) (*Point, error) {
+func (vc *VectorCalculator) IntersectionOfTwoPath(pa1, pa2, pb1, pb2 *Point) (*Point, error) {
 	p1, p2 := newNE(pa1.X(), pa1.Y()), newNE(pb1.X(), pb1.Y())
 	p11, p22 := newNE(pa2.X(), pa2.Y()), newNE(pb2.X(), pb2.Y())
 	c1, c2 := p1.cross(p11), p2.cross(p22)
@@ -125,6 +124,20 @@ func (VectorCalculator) IntersectionOfTwoPath(pa1, pa2, pb1, pb2 *Point) (*Point
 	return i2.toPoint(), nil
 }
 
-func (VectorCalculator) Intersection(pa *Point, bearingDegA float64, pb *Point, bearingDegB float64) (*Point, error) {
-	return nil, nil
+func (vc *VectorCalculator) Intersection(pa *Point, bearingDegA float64, pb *Point, bearingDegB float64) (*Point, error) {
+	na, nb := newNEWithPoint(pa), newNEWithPoint(pb)
+	bearingA, bearingB := ToRadians(bearingDegA), ToRadians(bearingDegB)
+
+	dae := nNorth.cross(na).unit()
+	dan := na.cross(dae)
+	da := dan.mul(Cos(bearingA)).add(dae.mul(Sin(bearingA)))
+	c1 := na.cross(da)
+
+	dbe := nNorth.cross(nb).unit()
+	dbn := nb.cross(dbe)
+	db := dbn.mul(Cos(bearingB)).add(dbe.mul(Sin(bearingB)))
+	c2 := nb.cross(db)
+
+	nc := c1.cross(c2)
+	return nc.toPoint(), nil
 }

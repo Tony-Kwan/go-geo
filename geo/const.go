@@ -11,3 +11,9 @@ const (
 
 	EarthRadius float64 = 6371000
 )
+
+var (
+	cartesianCalc = &CartesianCalculator{}
+	sphereCalc    = &SphereCalculator{}
+	vectorCalc    = &VectorCalculator{}
+)

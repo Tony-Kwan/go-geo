@@ -41,10 +41,10 @@ func TestSphereCalculator_Mid(t *testing.T) {
 
 func TestSphereCalculator_Circle_Area(t *testing.T) {
 	circle := NewCircle(0, 0, 90, GeoCtx)
-	info.Println(calc.Area(circle) * math.Pow(EarthRadius, 2) * 2)
+	info.Println(sphereCalc.Area(circle) * math.Pow(EarthRadius, 2) * 2)
 }
 
 func TestSphereCalculator_Rectangle_Area(t *testing.T) {
 	rect := NewRectangle(0, 180, 0, 90, GeoCtx)
-	info.Println(calc.Area(rect) * math.Pow(EarthRadius, 2) * 4)
+	info.Println(sphereCalc.Area(rect) * math.Pow(EarthRadius, 2) * 4)
 }
