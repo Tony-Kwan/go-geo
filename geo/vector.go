@@ -1,10 +1,13 @@
 package geo
 
 import (
+	"fmt"
 	. "math"
+	"strconv"
 )
 
 var (
+	zero   = &vector3{}
 	nNorth = &vector3{x: 0, y: 0, z: 1}
 )
 
@@ -72,6 +75,23 @@ func (v *vector3) dot(u *vector3) float64 {
 func (v *vector3) angleTo(u, n *vector3) float64 {
 	sign := sign(v.cross(u).dot(n))
 	return Atan2(v.cross(u).norm()*float64(sign), v.dot(u))
+}
+
+func (v *vector3) ApproxEqual(u *vector3) bool {
+	if v == nil || u == nil {
+		return false
+	}
+	const eps = E12
+	return Abs(v.x-u.x) < eps && Abs(v.y-u.y) < eps && Abs(v.z-u.z) < eps
+}
+
+func (v *vector3) String() string {
+	return fmt.Sprintf(
+		"[%s %s %s]",
+		strconv.FormatFloat(v.x, 'f', -1, 64),
+		strconv.FormatFloat(v.y, 'f', -1, 64),
+		strconv.FormatFloat(v.z, 'f', -1, 64),
+	)
 }
 
 func (p *Point) greatCircle(bearingDeg float64) *vector3 {

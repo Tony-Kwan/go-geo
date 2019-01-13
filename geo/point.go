@@ -2,6 +2,7 @@ package geo
 
 import (
 	"fmt"
+	"math"
 	"strconv"
 )
 
@@ -55,4 +56,12 @@ func (p *Point) Equals(other *Point) bool {
 		return true
 	}
 	return p.x == other.x && p.y == other.y && p.ctx == other.ctx
+}
+
+func (p *Point) ApproxEqual(other *Point) bool {
+	if p == nil || other == nil {
+		return false
+	}
+	const eps = E10
+	return math.Abs(p.x-other.x) < eps && math.Abs(p.y-other.y) < eps
 }

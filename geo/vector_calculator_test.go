@@ -53,26 +53,56 @@ func TestVectorCalculator_Distance(t *testing.T) {
 	fmt.Println((dis1 - dis2) * EarthRadius)
 }
 
-func TestVectorCalculator_Intersection(t *testing.T) {
+func TestVectorCalculator_IntersectionOfTwoPath(t *testing.T) {
 	p1 := NewPoint(113.021085, 23.292487, nil)
 	p2 := NewPoint(113.212321, 23.253895, nil)
-	p3 := NewPoint(113.121248, 22.873807, nil)
-	p12mid := vectorCalc.Mid(p1, p2, nil)
-	p23mid := vectorCalc.Mid(p2, p3, nil)
-	crs12mid4 := vectorCalc.Bearing(p12mid, p2) + 90
-	crs23mid4 := vectorCalc.Bearing(p23mid, p3) + 90
-	fmt.Println(p12mid, crs12mid4)
-	fmt.Println(p23mid, crs23mid4)
-	p4, err := vectorCalc.Intersection(p12mid, crs12mid4, p23mid, crs23mid4)
+	p3 := NewPoint(113.212321, 23.253895+E10, nil)
+
+	p4, err := vectorCalc.IntersectionOfTwoPath(p1, p2, p1, p3)
 	if err != nil {
 		t.Error(err)
 		return
 	}
 	fmt.Println(p4)
+}
 
-	fmt.Println(vectorCalc.Distance(p4, p1) * EarthRadius)
-	fmt.Println(vectorCalc.Distance(p4, p2) * EarthRadius)
-	fmt.Println(vectorCalc.Distance(p4, p3) * EarthRadius)
+func TestVectorCalculator_Triangulation(t *testing.T) {
+	p1 := NewPoint(113.021085, 23.292487, nil)
+	p2 := NewPoint(113.212321, 23.253895, nil)
+	p3 := NewPoint(113.121248, 22.873807, nil)
+	bearing12 := vectorCalc.Bearing(p1, p2)
+	bearing23 := vectorCalc.Bearing(p2, p3)
+	bearing32 := vectorCalc.Bearing(p3, p2)
+	tests := []struct {
+		points   [2]*Point
+		bearings [2]float64
+		want     *Point
+	}{
+		{
+			points:   [2]*Point{p1, p2},
+			bearings: [2]float64{bearing12, bearing23},
+			want:     p2,
+		},
+		{
+			points:   [2]*Point{p1, p3},
+			bearings: [2]float64{bearing12, bearing32},
+			want:     p2,
+		},
+		{
+			points:   [2]*Point{NewPoint(0, 0, nil), NewPoint(1, 0, nil)},
+			bearings: [2]float64{0, 90},
+			want:     NewPoint(0, 0, nil),
+		},
+	}
+	for _, test := range tests {
+		p4, err := vectorCalc.Triangulation(test.points[0], test.bearings[0], test.points[1], test.bearings[1])
+		if err != nil {
+			t.Error(err)
+			continue
+		} else if !p4.ApproxEqual(test.want) {
+			t.Errorf("expect=%v, found=%v", test.want, p4)
+		}
+	}
 }
 
 func TestVectorCalculator_Circumcenter(t *testing.T) {

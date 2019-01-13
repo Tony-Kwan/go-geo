@@ -2,6 +2,7 @@ package geo
 
 import (
 	"errors"
+	"fmt"
 	. "math"
 	"math/rand"
 )
@@ -96,35 +97,55 @@ func (vc *VectorCalculator) MinCoverCircle(points ...*Point) (*Circle, error) {
 	return NewCircle(c.X(), c.Y(), r, nil), nil
 }
 
-func (vc *VectorCalculator) Circumcenter(p1, p2, p3 *Point) (*Point, error) {
-	p12Mid, p23Mid := vc.Mid(p1, p2, nil), vc.Mid(p2, p3, nil)
-	crs12Mid2 := vc.Bearing(p12Mid, p2)
-	crs23Mid3 := vc.Bearing(p23Mid, p3)
-	p4, err := vc.IntersectionOfTwoPath( //TODO: calc with clever way
-		vc.PointOnBearing(p12Mid, ToRadians(90-E6), crs12Mid2-90, nil),
-		vc.PointOnBearing(p12Mid, ToRadians(90-E6), crs12Mid2+90, nil),
-		vc.PointOnBearing(p23Mid, ToRadians(90-E6), crs23Mid3-90, nil),
-		vc.PointOnBearing(p23Mid, ToRadians(90-E6), crs23Mid3+90, nil),
-	)
+func (vc *VectorCalculator) Circumcenter(pa, pb, pc *Point) (*Point, error) {
+	p12Mid, p23Mid := vc.Mid(pa, pb, nil), vc.Mid(pb, pc, nil)
+	bearing12Mid2 := vc.Bearing(p12Mid, pb)
+	bearing23Mid3 := vc.Bearing(p23Mid, pc)
+	c1, c2 := p12Mid.greatCircle(bearing12Mid2+90), p23Mid.greatCircle(bearing23Mid3+90)
+	i1, i2, err := vc.intersectionOfTwoGreatCircle(c1, c2)
 	if err != nil {
 		return nil, err
 	}
-	return p4, nil
-}
-
-func (vc *VectorCalculator) IntersectionOfTwoPath(pa1, pa2, pb1, pb2 *Point) (*Point, error) {
-	p1, p2 := newNE(pa1.X(), pa1.Y()), newNE(pb1.X(), pb1.Y())
-	p11, p22 := newNE(pa2.X(), pa2.Y()), newNE(pb2.X(), pb2.Y())
-	c1, c2 := p1.cross(p11), p2.cross(p22)
-	i1, i2 := c1.cross(c2), c2.cross(c1)
-	mid := p1.add(p2).add(p11).add(p22)
-	if mid.dot(i1) > 0 {
+	nMid := newNEWithPoint(vc.meanPosition(pa, pb, pc))
+	if nMid.dot(i1) > 0 {
 		return i1.toPoint(), nil
 	}
 	return i2.toPoint(), nil
 }
 
-func (vc *VectorCalculator) Intersection(pa *Point, bearingDegA float64, pb *Point, bearingDegB float64) (*Point, error) {
+func (vc *VectorCalculator) intersectionOfTwoGreatCircle(c1, c2 *vector3) (*vector3, *vector3, error) {
+	if c1.ApproxEqual(c2) || c1.mul(-1).ApproxEqual(c2) {
+		return nil, nil, fmt.Errorf("infinite solutions: %v, %v", c1, c2)
+	}
+	i := c1.cross(c2)
+	return i, i.mul(-1), nil
+}
+
+func (vc *VectorCalculator) IntersectionOfTwoGreatCircle(pa *Point, bearingDegA float64, pb *Point, bearingDegB float64) (*Point, *Point, error) {
+	c1, c2 := pa.greatCircle(bearingDegA), pb.greatCircle(bearingDegB)
+	i1, i2, err := vc.intersectionOfTwoGreatCircle(c1, c2)
+	if err != nil {
+		return nil, nil, err
+	}
+	return i1.toPoint(), i2.toPoint(), nil
+}
+
+func (vc *VectorCalculator) IntersectionOfTwoPath(pa1, pa2, pb1, pb2 *Point) (*Point, error) {
+	na1, nb1 := newNE(pa1.X(), pa1.Y()), newNE(pb1.X(), pb1.Y())
+	na2, nb2 := newNE(pa2.X(), pa2.Y()), newNE(pb2.X(), pb2.Y())
+	c1, c2 := na1.cross(na2), nb1.cross(nb2)
+	i1, i2, err := vc.intersectionOfTwoGreatCircle(c1, c2)
+	if err != nil {
+		return nil, err
+	}
+	mid := newNEWithPoint(vc.meanPosition(pa1, pa2, pb1, pb2))
+	if mid.dot(i1) > 0 { //select nearest intersection of mid of all points
+		return i1.toPoint(), nil
+	}
+	return i2.toPoint(), nil
+}
+
+func (vc *VectorCalculator) Triangulation(pa *Point, bearingDegA float64, pb *Point, bearingDegB float64) (*Point, error) {
 	na, nb := newNEWithPoint(pa), newNEWithPoint(pb)
 	bearingA, bearingB := ToRadians(bearingDegA), ToRadians(bearingDegB)
 
@@ -138,6 +159,23 @@ func (vc *VectorCalculator) Intersection(pa *Point, bearingDegA float64, pb *Poi
 	db := dbn.mul(Cos(bearingB)).add(dbe.mul(Sin(bearingB)))
 	c2 := nb.cross(db)
 
-	nc := c1.cross(c2)
-	return nc.toPoint(), nil
+	i1, i2, err := vc.intersectionOfTwoGreatCircle(c1, c2)
+	if err != nil {
+		return nil, err
+	}
+	dir1 := sign(c1.cross(na).dot(i1))
+	dir2 := sign(c2.cross(nb).dot(i2))
+	switch dir1 + dir2 {
+	case 2:
+		return i1.toPoint(), nil
+	case -2:
+		return i2.toPoint(), nil
+	case 0:
+		if na.add(nb).dot(i1) > 0 {
+			return i1.toPoint(), nil
+		}
+		return i2.toPoint(), nil
+	default:
+		return nil, fmt.Errorf("program should not run here: dir=%d, dir2=%d", dir1, dir2)
+	}
 }

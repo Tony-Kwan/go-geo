@@ -8,6 +8,9 @@ const (
 	E10 = 1e-10
 	E11 = 1e-11
 	E12 = 1e-12
+	E13 = 1e-13
+	E14 = 1e-14
+	E15 = 1e-15
 
 	EarthRadius float64 = 6371000
 )
