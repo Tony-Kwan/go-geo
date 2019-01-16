@@ -146,6 +146,12 @@ func TestVectorCalculator_MinCoverCircle(t *testing.T) {
 		t.Error(err)
 		return
 	}
-	fmt.Println(circle)
+	//fmt.Println(circle)
 	fmt.Println(circle.radius * EarthRadius)
+}
+
+func TestVectorCalculator_MinCoverCircle_2(t *testing.T) {
+	for i := 0; i < 1000; i++ {
+		TestVectorCalculator_MinCoverCircle(t)
+	}
 }

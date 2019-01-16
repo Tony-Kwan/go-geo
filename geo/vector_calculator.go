@@ -68,6 +68,7 @@ func (vc *VectorCalculator) MinCoverCircle(points ...*Point) (*Circle, error) {
 
 	ps := make([]*Point, n)
 	copy(ps, points)
+	//TODO: fix error after shuffle
 	//rand.Shuffle(n, func(i, j int) {
 	//	ps[i], ps[j] = ps[j], ps[i]
 	//})
