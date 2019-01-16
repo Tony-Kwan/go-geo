@@ -19,7 +19,7 @@ func TestVectorCalculator_meanPosition(t *testing.T) {
 		NewPoint(-81.9465923309326, 36.309868813086695, nil),
 		NewPoint(-84.01296615600586, 33.51764054105411, nil),
 	}
-	m := vectorCalc.meanPosition(points...)
+	m := vectorCalc.MeanPosition(points...)
 	fmt.Println(m)
 	for _, nE := range points {
 		fmt.Println(vectorCalc.Distance(m, nE) * EarthRadius)

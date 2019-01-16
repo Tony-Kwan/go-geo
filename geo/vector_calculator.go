@@ -9,7 +9,7 @@ import (
 type VectorCalculator struct {
 }
 
-func (VectorCalculator) meanPosition(points ...*Point) *Point {
+func (VectorCalculator) MeanPosition(points ...*Point) *Point {
 	nM := &vector3{}
 	for _, point := range points {
 		nE := newNEWithPoint(point)
@@ -33,7 +33,7 @@ func (vc *VectorCalculator) Mid(from, to *Point, ctx GeoContext) *Point {
 	if from.Equals(to) {
 		return from.clone().(*Point)
 	}
-	return vc.meanPosition(from, to)
+	return vc.MeanPosition(from, to)
 }
 
 func (VectorCalculator) Bearing(from, to *Point) float64 {
@@ -106,7 +106,7 @@ func (vc *VectorCalculator) Circumcenter(pa, pb, pc *Point) (*Point, error) {
 	if err != nil {
 		return nil, err
 	}
-	nMid := newNEWithPoint(vc.meanPosition(pa, pb, pc))
+	nMid := newNEWithPoint(vc.MeanPosition(pa, pb, pc))
 	if nMid.dot(i1) > 0 {
 		return i1.toPoint(), nil
 	}
@@ -138,7 +138,7 @@ func (vc *VectorCalculator) IntersectionOfTwoPath(pa1, pa2, pb1, pb2 *Point) (*P
 	if err != nil {
 		return nil, err
 	}
-	mid := newNEWithPoint(vc.meanPosition(pa1, pa2, pb1, pb2))
+	mid := newNEWithPoint(vc.MeanPosition(pa1, pa2, pb1, pb2))
 	if mid.dot(i1) > 0 { //select nearest intersection of mid of all points
 		return i1.toPoint(), nil
 	}
