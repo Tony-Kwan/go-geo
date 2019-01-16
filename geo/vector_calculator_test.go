@@ -123,11 +123,23 @@ func TestVectorCalculator_Circumcenter(t *testing.T) {
 
 func TestVectorCalculator_MinCoverCircle(t *testing.T) {
 	points := []*Point{
-		NewPoint(113.021085, 23.292487, nil),
-		NewPoint(113.212321, 23.253895, nil),
-		NewPoint(113.121248, 22.873807, nil),
-		NewPoint(112.930559, 22.91243, nil),
-		NewPoint(113.021085, 23.292487, nil),
+		//NewPoint(7.098206748478991, 46.658250853066654, nil),
+		//NewPoint(7.096818204096314, 46.6255295921, nil),
+		//NewPoint(7.081215882059562, 46.62424586456617, nil),
+		//NewPoint(7.068605669086119, 46.655815315282965, nil),
+		//NewPoint(7.098206748478991, 46.658250853066654, nil),
+
+		//NewPoint(7.107510838765815, 46.56415356342374, nil),
+		//NewPoint(7.120093200561858, 46.53258287949015, nil),
+		//NewPoint(7.090541763528792, 46.530148356963075, nil),
+		//NewPoint(7.091926209321755, 46.56286965110933, nil),
+		//NewPoint(7.107510838765815, 46.56415356342374, nil),
+
+		NewPoint(3.4187225890205233, 46.20547150536718, nil),
+		NewPoint(3.4039554760716264, 46.13243249643665, nil),
+		NewPoint(3.3885327467298407, 46.13392817417585, nil),
+		NewPoint(3.403279258370794, 46.20696665022393, nil),
+		NewPoint(3.4187225890205233, 46.20547150536718, nil),
 	}
 	circle, err := vectorCalc.MinCoverCircle(points...)
 	if err != nil {

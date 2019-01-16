@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 	. "math"
-	"math/rand"
 )
 
 type VectorCalculator struct {
@@ -69,9 +68,9 @@ func (vc *VectorCalculator) MinCoverCircle(points ...*Point) (*Circle, error) {
 
 	ps := make([]*Point, n)
 	copy(ps, points)
-	rand.Shuffle(n, func(i, j int) {
-		ps[i], ps[j] = ps[j], ps[i]
-	})
+	//rand.Shuffle(n, func(i, j int) {
+	//	ps[i], ps[j] = ps[j], ps[i]
+	//})
 	c, r := ps[0], 0.
 	var err error
 	for i := 1; i < n; i++ {
