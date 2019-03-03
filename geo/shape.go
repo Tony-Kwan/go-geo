@@ -20,12 +20,10 @@ type AbstractShape struct {
 
 func (*AbstractShape) GetArea() float64 {
 	panic(ErrUnsupportedOperation)
-	return 0
 }
 
 func (*AbstractShape) GetCenter() *Point {
 	panic(ErrUnsupportedOperation)
-	return nil
 }
 
 func (s *AbstractShape) GetContext() GeoContext {
@@ -34,5 +32,4 @@ func (s *AbstractShape) GetContext() GeoContext {
 
 func (AbstractShape) clone() Shape {
 	panic(ErrUnsupportedOperation)
-	return nil
 }

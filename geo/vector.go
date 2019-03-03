@@ -111,6 +111,14 @@ type vector2 struct {
 	x, y float64
 }
 
+func NewVector2(p0, p1 *Point) *vector2 {
+	return &vector2{x: p1.x - p0.x, y: p1.y - p0.y}
+}
+
 func (v *vector2) cross(u *vector2) float64 {
 	return v.x*u.y - u.x*v.y
+}
+
+func (v *vector2) dot(u *vector2) float64 {
+	return v.x*u.x + v.y*u.y
 }

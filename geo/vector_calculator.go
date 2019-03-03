@@ -56,8 +56,16 @@ func (VectorCalculator) PointOnBearing(from *Point, distRad, bearingDeg float64,
 	return x.add(y).toPoint()
 }
 
-func (VectorCalculator) Area(s Shape) float64 {
+func (vc *VectorCalculator) Area(s Shape) float64 {
+	switch s.(type) {
+	case *Triangle:
+
+	}
 	return sphereCalc.Area(s)
+}
+
+func (vc *VectorCalculator) areaOfTriangle(tri *Triangle) float64 {
+	return 0 //TODO: impl
 }
 
 func (vc *VectorCalculator) MinCoverCircle(points ...*Point) (*Circle, error) {
