@@ -155,3 +155,41 @@ func TestVectorCalculator_MinCoverCircle_2(t *testing.T) {
 		TestVectorCalculator_MinCoverCircle(t)
 	}
 }
+
+func TestVectorCalculator_Triangle_Area(t *testing.T) {
+	tris := []*Triangle{
+		NewTriangle(
+			NewPoint(0, 0, GeoCtx),
+			NewPoint(90, 0, GeoCtx),
+			NewPoint(0, 90, GeoCtx),
+			GeoCtx,
+		),
+		NewTriangle(
+			NewPoint(0, 0, GeoCtx),
+			NewPoint(90, 0, GeoCtx),
+			NewPoint(45, 45, GeoCtx),
+			GeoCtx,
+		),
+		NewTriangle(
+			NewPoint(0, 0, GeoCtx),
+			NewPoint(30, 30, GeoCtx),
+			NewPoint(45, 45, GeoCtx),
+			GeoCtx,
+		),
+		NewTriangle(
+			NewPoint(90, 0, GeoCtx),
+			NewPoint(-80, 0, GeoCtx),
+			NewPoint(40, 40, GeoCtx),
+			GeoCtx,
+		),
+		NewTriangle(
+			NewPoint(0, 90, GeoCtx),
+			NewPoint(0, -90, GeoCtx),
+			NewPoint(1, 0, GeoCtx),
+			GeoCtx,
+		),
+	}
+	for _, tri := range tris {
+		info.Println(vectorCalc.Area(tri) * EarthRadius2)
+	}
+}

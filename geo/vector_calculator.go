@@ -36,10 +36,14 @@ func (vc *VectorCalculator) Mid(from, to *Point, ctx GeoContext) *Point {
 	return vc.MeanPosition(from, to)
 }
 
-func (VectorCalculator) Bearing(from, to *Point) float64 {
+func (vc *VectorCalculator) Bearing(from, to *Point) float64 {
+	return vc.bearing(from, to, nNorth)
+}
+
+func (vc *VectorCalculator) bearing(from, to *Point, n *vector3) float64 {
 	nFrom, nTo := newNE(from.X(), from.Y()), newNE(to.X(), to.Y())
-	c1, c2 := nFrom.cross(nTo), nFrom.cross(nNorth)
-	bearing := c1.angleTo(c2, nFrom)
+	c1, c2 := nFrom.cross(nTo), nFrom.cross(n)
+	bearing := c1.angleTo(c2, n)
 	return Mod(ToDegrees(bearing)+360., 360.)
 }
 
@@ -56,8 +60,23 @@ func (VectorCalculator) PointOnBearing(from *Point, distRad, bearingDeg float64,
 	return x.add(y).toPoint()
 }
 
-func (VectorCalculator) Area(s Shape) float64 {
-	return sphereCalc.Area(s)
+func (vc *VectorCalculator) Area(s Shape) float64 {
+	switch s.(type) {
+	case *Triangle:
+		return vc.areaOfTriangle(s.(*Triangle))
+	default:
+		return sphereCalc.Area(s)
+	}
+}
+
+func (vc *VectorCalculator) areaOfTriangle(tri *Triangle) float64 {
+	na, nb, nc := newNEWithPoint(tri.A), newNEWithPoint(tri.B), newNEWithPoint(tri.C)
+	A := ToRadians(vc.bearing(tri.A, tri.C, nb))
+	B := ToRadians(vc.bearing(tri.B, tri.A, nc))
+	C := ToRadians(vc.bearing(tri.C, tri.B, na))
+	A, B, C = Min(Pi*2-A, A), Min(Pi*2-B, B), Min(Pi*2-C, C)
+	fmt.Println(ToDegrees(A), ToDegrees(B), ToDegrees(C))
+	return A + B + C - Pi
 }
 
 func (vc *VectorCalculator) MinCoverCircle(points ...*Point) (*Circle, error) {

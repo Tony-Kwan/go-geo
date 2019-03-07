@@ -1,7 +1,6 @@
 package geo
 
 import (
-	"math"
 	"testing"
 )
 
@@ -41,10 +40,42 @@ func TestSphereCalculator_Mid(t *testing.T) {
 
 func TestSphereCalculator_Circle_Area(t *testing.T) {
 	circle := NewCircle(0, 0, 90, GeoCtx)
-	info.Println(sphereCalc.Area(circle) * math.Pow(EarthRadius, 2) * 2)
+	info.Println(sphereCalc.Area(circle) * EarthRadius2 * 2)
 }
 
 func TestSphereCalculator_Rectangle_Area(t *testing.T) {
 	rect := NewRectangle(0, 180, 0, 90, GeoCtx)
-	info.Println(sphereCalc.Area(rect) * math.Pow(EarthRadius, 2) * 4)
+	info.Println(sphereCalc.Area(rect) * EarthRadius2 * 4)
+}
+
+func TestSphereCalculator_Triangle_Area(t *testing.T) {
+	tris := []*Triangle{
+		NewTriangle(
+			NewPoint(0, 0, GeoCtx),
+			NewPoint(90, 0, GeoCtx),
+			NewPoint(0, 90, GeoCtx),
+			GeoCtx,
+		),
+		NewTriangle(
+			NewPoint(0, 0, GeoCtx),
+			NewPoint(90, 0, GeoCtx),
+			NewPoint(45, 45, GeoCtx),
+			GeoCtx,
+		),
+		NewTriangle(
+			NewPoint(0, 0, GeoCtx),
+			NewPoint(30, 30, GeoCtx),
+			NewPoint(45, 45, GeoCtx),
+			GeoCtx,
+		),
+		NewTriangle(
+			NewPoint(90, 0, GeoCtx),
+			NewPoint(-80, 0, GeoCtx),
+			NewPoint(40, 40, GeoCtx),
+			GeoCtx,
+		),
+	}
+	for _, tri := range tris {
+		info.Println(sphereCalc.Area(tri) * EarthRadius2)
+	}
 }

@@ -12,7 +12,8 @@ const (
 	E14 = 1e-14
 	E15 = 1e-15
 
-	EarthRadius float64 = 6371000
+	EarthRadius  float64 = 6371000
+	EarthRadius2 float64 = EarthRadius * EarthRadius
 )
 
 var (
