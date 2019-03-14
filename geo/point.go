@@ -51,6 +51,10 @@ func (p *Point) String() string {
 	)
 }
 
+func (p *Point) cross(b, c *Point) float64 {
+	return (b.x-p.x)*(c.y-p.y) - (b.y-p.y)*(c.x-p.x)
+}
+
 func (p *Point) Equals(other *Point) bool {
 	if p == other {
 		return true
