@@ -29,6 +29,10 @@ type Polygon struct {
 	//Holes []LinearRing  //TODO: Support holes
 }
 
+func NewPolygon(shell LinearRing) *Polygon {
+	return &Polygon{shell: shell}
+}
+
 func (p *Polygon) GetNumPoints() int {
 	return p.shell.GetNumPoints()
 }

@@ -46,8 +46,8 @@ func (p *Polygon) Triangulate() ([]Triangle, error) {
 		curr := node.Elem.(*earClippingPoint)
 		prev := node.Prev.Elem.(*earClippingPoint)
 		next := node.Next.Elem.(*earClippingPoint)
-		if points.Size() == 3 {
-			ret = append(ret, Triangle{a: &prev.Point, b: &curr.Point, c: &next.Point})
+		if points.Size() < 3 {
+			//ret = append(ret, Triangle{a: &prev.Point, b: &curr.Point, c: &next.Point})
 			break
 		}
 		if !curr.isEar {
