@@ -59,13 +59,33 @@ func (VectorCalculator) PointOnBearing(from *Point, distRad, bearingDeg float64,
 func (vc *VectorCalculator) Area(s Shape) float64 {
 	switch s.(type) {
 	case *Triangle:
-
+		return vc.areaOfTriangle(s.(*Triangle))
+	case *Polygon:
+		return vc.areaOfPolygon(s.(*Polygon))
 	}
 	return sphereCalc.Area(s)
 }
 
 func (vc *VectorCalculator) areaOfTriangle(tri *Triangle) float64 {
-	return 0 //TODO: impl
+	v1, v2, v3 := newNEWithPoint(tri.a), newNEWithPoint(tri.b), newNEWithPoint(tri.c)
+	a1, a2, a3 := v1.angleTo(v2, v3), v2.angleTo(v1, v3), v3.angleTo(v2, v1)
+	fmt.Println(ToDegrees(a1), ToDegrees(a2), ToDegrees(a3))
+	fmt.Println(ToDegrees(v1.angleTo(v2, v3)), ToDegrees(v1.angleTo(v3, v2)))
+	fmt.Println(ToDegrees(v2.angleTo(v1, v3)), ToDegrees(v2.angleTo(v3, v1)))
+	fmt.Println(ToDegrees(v3.angleTo(v2, v1)), ToDegrees(v3.angleTo(v1, v2)))
+	return 0
+}
+
+func (vc *VectorCalculator) areaOfPolygon(p *Polygon) float64 {
+	tris, err := p.Triangulate()
+	if err != nil {
+		return -MaxFloat64
+	}
+	var sum float64
+	for _, tri := range tris {
+		sum += vc.areaOfTriangle(&tri)
+	}
+	return sum
 }
 
 func (vc *VectorCalculator) MinCoverCircle(points ...*Point) (*Circle, error) {

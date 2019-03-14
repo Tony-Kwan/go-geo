@@ -5,7 +5,8 @@ type SpatialContext struct {
 }
 
 func NewSpatialContext() *SpatialContext {
-	return &SpatialContext{calc: &SphereCalculator{}}
+	//return &SpatialContext{calc: &SphereCalculator{}}
+	return &SpatialContext{calc: &VectorCalculator{}}
 }
 
 func (ctx *SpatialContext) GetCalculator() Calculator {

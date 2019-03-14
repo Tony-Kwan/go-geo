@@ -155,3 +155,29 @@ func TestVectorCalculator_MinCoverCircle_2(t *testing.T) {
 		TestVectorCalculator_MinCoverCircle(t)
 	}
 }
+
+func TestVectorCalculator_AreaOfTriangle(t *testing.T) {
+	tri := &Triangle{
+		a: NewPoint(0, 0, nil),
+		b: NewPoint(0, 89, nil),
+		c: NewPoint(90, 45, nil),
+	}
+	t.Log(vectorCalc.areaOfTriangle(tri) * EarthRadius2)
+}
+
+func TestVectorCalculator_AreaOfPolygon(t *testing.T) {
+	polygon := &Polygon{shell: LinearRing{
+		*NewPoint(-92.38059997558592, 45.38157243512828, nil),
+		*NewPoint(-90.47378540039062, 40.582670638095294, nil),
+		*NewPoint(-81.50894165039061, 39.77397788285171, nil),
+		*NewPoint(-87.19505310058592, 37.1594957106433, nil),
+		*NewPoint(-86.93138122558594, 32.01972036197235, nil),
+		*NewPoint(-91.06224060058594, 35.909908145897035, nil),
+		*NewPoint(-95.95733642578125, 31.974007590177635, nil),
+		*NewPoint(-94.81475830078125, 37.60580020781012, nil),
+		*NewPoint(-102.54913330078125, 38.29882852868994, nil),
+		*NewPoint(-93.93585205078125, 40.27140563877154, nil),
+		*NewPoint(-92.38059997558592, 45.38157243512828, nil),
+	}}
+	t.Log(vectorCalc.areaOfPolygon(polygon))
+}

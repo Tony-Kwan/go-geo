@@ -25,6 +25,8 @@ var polarAngleSort = func(ps []Point) {
 }
 
 type Polygon struct {
+	AbstractShape
+
 	shell LinearRing
 	//Holes []LinearRing  //TODO: Support holes
 }
@@ -39,6 +41,10 @@ func (p *Polygon) GetNumPoints() int {
 
 func (p *Polygon) IsSimple() bool {
 	return p.shell.IsSimple()
+}
+
+func (p *Polygon) GetArea() float64 {
+	return p.GetContext().GetCalculator().Area(p)
 }
 
 func (p *Polygon) ConvexHull() (*Polygon, error) {
