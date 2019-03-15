@@ -36,10 +36,14 @@ func (vc *VectorCalculator) Mid(from, to *Point, ctx GeoContext) *Point {
 	return vc.MeanPosition(from, to)
 }
 
-func (VectorCalculator) Bearing(from, to *Point) float64 {
+func (vc *VectorCalculator) Bearing(from, to *Point) float64 {
+	return vc.bearing(from, to, nNorth)
+}
+
+func (vc *VectorCalculator) bearing(from, to *Point, n *vector3) float64 {
 	nFrom, nTo := newNE(from.X(), from.Y()), newNE(to.X(), to.Y())
-	c1, c2 := nFrom.cross(nTo), nFrom.cross(nNorth)
-	bearing := c1.angleTo(c2, nFrom)
+	c1, c2 := nFrom.cross(nTo), nFrom.cross(n)
+	bearing := c1.angleTo(c2, n)
 	return Mod(ToDegrees(bearing)+360., 360.)
 }
 
@@ -62,18 +66,19 @@ func (vc *VectorCalculator) Area(s Shape) float64 {
 		return vc.areaOfTriangle(s.(*Triangle))
 	case *Polygon:
 		return vc.areaOfPolygon(s.(*Polygon))
+	default:
+		return sphereCalc.Area(s)
 	}
-	return sphereCalc.Area(s)
 }
 
 func (vc *VectorCalculator) areaOfTriangle(tri *Triangle) float64 {
-	v1, v2, v3 := newNEWithPoint(tri.a), newNEWithPoint(tri.b), newNEWithPoint(tri.c)
-	a1, a2, a3 := v1.angleTo(v2, v3), v2.angleTo(v1, v3), v3.angleTo(v2, v1)
-	fmt.Println(ToDegrees(a1), ToDegrees(a2), ToDegrees(a3))
-	fmt.Println(ToDegrees(v1.angleTo(v2, v3)), ToDegrees(v1.angleTo(v3, v2)))
-	fmt.Println(ToDegrees(v2.angleTo(v1, v3)), ToDegrees(v2.angleTo(v3, v1)))
-	fmt.Println(ToDegrees(v3.angleTo(v2, v1)), ToDegrees(v3.angleTo(v1, v2)))
-	return 0
+	na, nb, nc := newNEWithPoint(tri.a), newNEWithPoint(tri.b), newNEWithPoint(tri.c)
+	A := ToRadians(vc.bearing(tri.a, tri.c, nb))
+	B := ToRadians(vc.bearing(tri.b, tri.a, nc))
+	C := ToRadians(vc.bearing(tri.c, tri.b, na))
+	A, B, C = Min(Pi*2-A, A), Min(Pi*2-B, B), Min(Pi*2-C, C)
+	fmt.Println(ToDegrees(A), ToDegrees(B), ToDegrees(C))
+	return A + B + C - Pi
 }
 
 func (vc *VectorCalculator) areaOfPolygon(p *Polygon) float64 {

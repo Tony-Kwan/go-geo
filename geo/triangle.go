@@ -13,6 +13,12 @@ type Triangle struct {
 	c *Point
 }
 
+func NewTriangle(a, b, c *Point, ctx GeoContext) *Triangle {
+	tri := &Triangle{a: a, b: b, c: c}
+	tri.ctx = ctx
+	return tri
+}
+
 func (tri *Triangle) GetArea() float64 {
 	return tri.GetContext().GetCalculator().Area(tri)
 }
