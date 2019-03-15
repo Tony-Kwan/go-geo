@@ -77,7 +77,7 @@ func (vc *VectorCalculator) areaOfTriangle(tri *Triangle) float64 {
 	B := ToRadians(vc.bearing(tri.b, tri.a, nc))
 	C := ToRadians(vc.bearing(tri.c, tri.b, na))
 	A, B, C = Min(Pi*2-A, A), Min(Pi*2-B, B), Min(Pi*2-C, C)
-	fmt.Println(ToDegrees(A), ToDegrees(B), ToDegrees(C))
+	//fmt.Println(ToDegrees(A), ToDegrees(B), ToDegrees(C))
 	return A + B + C - Pi
 }
 
