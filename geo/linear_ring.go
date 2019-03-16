@@ -6,7 +6,7 @@ import (
 	"strconv"
 )
 
-type LinearRing []Point
+type LinearRing LineString
 
 func (r LinearRing) GetNumPoints() int { return len(r) }
 
