@@ -1,6 +1,7 @@
-package wkt
+package test
 
 import (
+	"github.com/Tony-Kwan/go-geo/geo/io/wkt"
 	"testing"
 )
 
@@ -29,7 +30,7 @@ func TestWktReader_Read(t *testing.T) {
 	}
 	for _, c := range cases {
 		t.Log("Input: ", c)
-		s, err := WktReader{}.Read(c)
+		s, err := wkt.WktReader{}.Read(c)
 		if err != nil {
 			t.Error("[ERROR]", err)
 		} else {

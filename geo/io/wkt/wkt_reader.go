@@ -6,6 +6,7 @@ import (
 	"github.com/Tony-Kwan/go-geo/geo"
 	lex "github.com/timtadh/lexmachine"
 	"github.com/timtadh/lexmachine/machines"
+	"reflect"
 	"strconv"
 	"strings"
 )
@@ -66,6 +67,17 @@ func init() {
 
 type WktReader struct {
 	scanner *lex.Scanner
+}
+
+func MustPolygon(s interface{}, err error) *geo.Polygon {
+	if err != nil {
+		panic(err)
+	}
+	ret, ok := s.(*geo.Polygon)
+	if !ok {
+		panic(fmt.Errorf("%v can't cast to *geo.Polygon", reflect.TypeOf(s)))
+	}
+	return ret
 }
 
 func (r WktReader) Read(wkt string) (interface{}, error) {
