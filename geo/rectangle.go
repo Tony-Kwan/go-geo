@@ -25,6 +25,14 @@ func NewRectangle(minX, maxX, minY, maxY float64, ctx GeoContext) *Rectangle {
 	}
 }
 
+func (rect *Rectangle) GetWidth() float64 {
+	return rect.MaxX - rect.MinY
+}
+
+func (rect *Rectangle) GetHeight() float64 {
+	return rect.MaxY - rect.MinY
+}
+
 func (rect *Rectangle) Union(rects ...*Rectangle) *Rectangle {
 	ret := rect.clone().(*Rectangle)
 	for _, r := range rects {
