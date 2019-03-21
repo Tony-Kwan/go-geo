@@ -38,8 +38,8 @@ func (node *rnode) calcBounds() *geo.Rectangle {
 func (node *rnode) String() string {
 	if node.isLeaf {
 		esl := make([]string, len(node.entries))
-		for i, entry := range node.entries {
-			esl[i] = fmt.Sprintf("%v", entry)
+		for i := range node.entries {
+			esl[i] = fmt.Sprintf("%v", node.entries[i])
 		}
 		return fmt.Sprintf("rnode{bounds=%s, isLeaf=%t, entries=[%s]", node.bounds.String(), node.isLeaf, strings.Join(esl, ", "))
 	}
