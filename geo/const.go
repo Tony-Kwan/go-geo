@@ -17,7 +17,8 @@ const (
 )
 
 var (
-	GeoCtx = NewSpatialContext()
+	GeoCtx       = NewSpatialContext()
+	CartesianCtx = NewCartesianContext()
 
 	cartesianCalc = &CartesianCalculator{}
 	sphereCalc    = &SphereCalculator{}
