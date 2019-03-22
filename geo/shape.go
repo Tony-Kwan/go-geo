@@ -33,3 +33,7 @@ func (s *AbstractShape) GetContext() GeoContext {
 func (AbstractShape) clone() Shape {
 	panic(ErrUnsupportedOperation)
 }
+
+func (s *AbstractShape) SetContext(ctx GeoContext) {
+	s.ctx = ctx
+}

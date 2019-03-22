@@ -25,7 +25,7 @@ func (tri *Triangle) GetArea() float64 {
 
 func (tri *Triangle) String() string {
 	return fmt.Sprintf(
-		"POLYGON((%s %s, %s %s, %s %s, %s %s))",
+		"POLYGON ((%s %s, %s %s, %s %s, %s %s))",
 		strconv.FormatFloat(tri.a.X(), 'f', -1, 64), strconv.FormatFloat(tri.a.Y(), 'f', -1, 64),
 		strconv.FormatFloat(tri.b.X(), 'f', -1, 64), strconv.FormatFloat(tri.b.Y(), 'f', -1, 64),
 		strconv.FormatFloat(tri.c.X(), 'f', -1, 64), strconv.FormatFloat(tri.c.Y(), 'f', -1, 64),

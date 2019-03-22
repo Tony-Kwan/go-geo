@@ -47,6 +47,17 @@ func (p *Polygon) GetArea() float64 {
 	return p.GetContext().GetCalculator().Area(p)
 }
 
+func (p *Polygon) Bounds() *Rectangle {
+	b := NewRectangle(math.MaxFloat64, math.MaxFloat64, -math.MaxFloat64, -math.MaxFloat64, p.ctx)
+	for _, point := range p.shell {
+		b.min.x = math.Min(b.min.x, point.x)
+		b.min.y = math.Min(b.min.y, point.y)
+		b.max.x = math.Max(b.max.x, point.x)
+		b.max.y = math.Max(b.max.y, point.y)
+	}
+	return b
+}
+
 func (p *Polygon) ConvexHull() (*Polygon, error) {
 	//TODO: validation
 	n := p.GetNumPoints() - 1
@@ -85,5 +96,5 @@ func (p *Polygon) ConvexHull() (*Polygon, error) {
 }
 
 func (p *Polygon) String() string {
-	return "POLYGON(" + p.shell.String()[10:] + ")"
+	return "POLYGON (" + p.shell.String()[10:] + ")"
 }

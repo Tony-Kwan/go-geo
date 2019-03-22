@@ -28,13 +28,23 @@ func NewRtree(m, M int) (*Rtree, error) {
 	}, nil
 }
 
+func (r *Rtree) Bounds() *geo.Rectangle {
+	return geo.NewRectangle(
+		r.root.bounds.GetMinX(),
+		r.root.bounds.GetMinY(),
+		r.root.bounds.GetMaxX(),
+		r.root.bounds.GetMaxY(),
+		r.root.bounds.GetContext(),
+	)
+}
+
 func (r *Rtree) Insert(entry Spatial) *Rtree {
 	// I1
 	l := r.chooseLeaf(r.root, entry).(*rnode)
 
 	// I2
 	l.entries = append(l.entries, entry)
-	var ll *rnode
+	var ll *rnode = nil
 	if l.NumEntries() > r.maxEntries {
 		l, ll = r.splitNode(l)
 	}
@@ -89,8 +99,13 @@ func (r *Rtree) chooseLeaf(node Spatial, entry Spatial) Spatial {
 
 func (r *Rtree) splitNode(node *rnode) (*rnode, *rnode) {
 	l := node
-	ll := &rnode{parent: node.parent, entries: node.entries[r.maxEntries:node.NumEntries()], isLeaf: node.isLeaf}
-	l.entries = node.entries[:r.maxEntries]
+	ll := &rnode{parent: node.parent, entries: node.entries[r.maxEntries:node.NumEntries():node.NumEntries()], isLeaf: node.isLeaf}
+	l.entries = node.entries[0:r.maxEntries:r.maxEntries]
+	if !ll.isLeaf {
+		for i := range ll.entries {
+			ll.entries[i].(*rnode).parent = ll
+		}
+	}
 	return l, ll
 }
 
@@ -110,15 +125,9 @@ func (r *Rtree) adjustTree(n, nn *rnode) (*rnode, *rnode) {
 
 	// AT4
 	if nn != nil {
-		nn.bounds = *nn.calcBounds()
 		p.entries = append(p.entries, nn)
 		if p.NumEntries() > r.maxEntries {
-			var pp *rnode
-			p, pp = r.adjustTree(r.splitNode(p))
-			for i := range pp.entries {
-				pp.entries[i].(*rnode).parent = pp
-			}
-			return p, pp
+			return r.adjustTree(r.splitNode(p))
 		}
 	}
 
@@ -128,8 +137,14 @@ func (r *Rtree) adjustTree(n, nn *rnode) (*rnode, *rnode) {
 
 func (r *Rtree) NumEntries() int { return r.numEntries }
 
+func (r *Rtree) Travel(f func(node Spatial, deep int) error) error {
+	return r.travel(r.root, 1, f)
+}
+
 func (r *Rtree) travel(node Spatial, deep int, f func(node Spatial, deep int) error) error {
-	f(node, deep)
+	if err := f(node, deep); err != nil {
+		return err
+	}
 
 	rnodePtr, ok := node.(*rnode)
 	if !ok {

@@ -77,11 +77,11 @@ func (calc *SphereCalculator) areaOfCircle(circle *Circle) float64 {
 }
 
 func (calc *SphereCalculator) areaOfRectangle(rect *Rectangle) float64 {
-	w := rect.MaxX - rect.MinX
+	w := rect.GetWidth()
 	if w < 0 {
 		w += 360.
 	}
-	minLat, maxLat := ToRadians(rect.MinY), ToRadians(rect.MaxY)
+	minLat, maxLat := ToRadians(rect.min.y), ToRadians(rect.max.y)
 	return Pi / 180. * Abs(Sin(minLat)-Sin(maxLat)) * w
 }
 

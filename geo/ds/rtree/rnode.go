@@ -23,16 +23,16 @@ func (node *rnode) NumEntries() int {
 }
 
 func (node *rnode) calcBounds() *geo.Rectangle {
-	minX, maxX, minY, maxY := math.MaxFloat64, -math.MaxFloat64, math.MaxFloat64, -math.MaxFloat64
+	minX, minY, maxX, maxY := math.MaxFloat64, math.MaxFloat64, -math.MaxFloat64, -math.MaxFloat64
 	var bounds *geo.Rectangle
 	for _, entry := range node.entries {
 		bounds = entry.Bounds()
-		minX = math.Min(minX, bounds.MinX)
-		maxX = math.Max(maxX, bounds.MaxX)
-		minY = math.Min(minY, bounds.MinY)
-		maxY = math.Max(maxY, bounds.MaxY)
+		minX = math.Min(minX, bounds.GetMinX())
+		minY = math.Min(minY, bounds.GetMinY())
+		maxX = math.Max(maxX, bounds.GetMaxX())
+		maxY = math.Max(maxY, bounds.GetMaxY())
 	}
-	return geo.NewRectangle(minX, maxX, minY, maxY, node.entries[0].Bounds().GetContext())
+	return geo.NewRectangle(minX, minY, maxX, maxY, node.entries[0].Bounds().GetContext())
 }
 
 func (node *rnode) String() string {

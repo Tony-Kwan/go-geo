@@ -30,5 +30,5 @@ func (cc *CartesianCalculator) Area(s Shape) float64 {
 }
 
 func (cc *CartesianCalculator) areaOfRectangle(rect *Rectangle) float64 {
-	return (rect.MaxX - rect.MinX) * (rect.MaxY - rect.MinY)
+	return rect.GetWidth() * rect.GetHeight()
 }

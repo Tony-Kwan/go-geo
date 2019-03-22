@@ -69,6 +69,10 @@ type WktReader struct {
 	scanner *lex.Scanner
 }
 
+func NewReader() *WktReader {
+	return &WktReader{}
+}
+
 func MustPolygon(s interface{}, err error) *geo.Polygon {
 	if err != nil {
 		panic(err)

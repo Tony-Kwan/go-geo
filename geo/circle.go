@@ -36,7 +36,7 @@ func (c *Circle) clone() Shape {
 
 func (c *Circle) String() string {
 	return fmt.Sprintf(
-		"CIRCLE((%s, %s), %s)",
+		"CIRCLE ((%s, %s), %s)",
 		strconv.FormatFloat(c.center.X(), 'f', -1, 64),
 		strconv.FormatFloat(c.center.Y(), 'f', -1, 64),
 		strconv.FormatFloat(c.radius, 'f', -1, 64),
