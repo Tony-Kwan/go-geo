@@ -43,8 +43,11 @@ func (vc *VectorCalculator) Bearing(from, to *Point) float64 {
 func (vc *VectorCalculator) bearing(from, to *Point, n *vector3) float64 {
 	nFrom, nTo := newNE(from.X(), from.Y()), newNE(to.X(), to.Y())
 	c1, c2 := nFrom.cross(nTo), nFrom.cross(n)
-	bearing := c1.angleTo(c2, n)
-	return Mod(ToDegrees(bearing)+360., 360.)
+	//bearing := c1.angleTo(c2, n)
+	//return Mod(ToDegrees(bearing)+360., 360.)
+	s := c1.cross(c2).norm() * float64(sign(c1.cross(c2).dot(nFrom)))
+	c := c1.dot(c2)
+	return Mod(ToDegrees(Atan2(s, c))+360., 360.)
 }
 
 func (VectorCalculator) PointOnBearing(from *Point, distRad, bearingDeg float64, ctx GeoContext) *Point {

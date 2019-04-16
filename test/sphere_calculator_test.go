@@ -1,32 +1,37 @@
 package test
 
-//var (
-//	p1 = NewPoint(-94.57202911376953, 28.61737745885398, GeoCtx)
-//	p2 = NewPoint(-82.85270690917969, 45.463742648776844, GeoCtx)
-//)
+import (
+	"github.com/Tony-Kwan/go-geo/geo"
+	"testing"
+)
+
+var (
+	p1 = geo.NewPoint(111.434, -7.603, geo.GeoCtx)
+	p2 = geo.NewPoint(111.435683, -7.626217, geo.GeoCtx)
+)
+
 //
 //func TestSphereCalculator_Distance(t *testing.T) {
 //	dist := GeoCtx.GetCalculator().Distance(p1, p2)
 //	info.Println(dist, dist*EarthRadius)
 //}
 //
-//func TestSphereCalculator_Bearing(t *testing.T) {
-//	bearingRad := GeoCtx.GetCalculator().Bearing(p1, p2)
-//	bearingDeg := ToDegrees(bearingRad)
-//	info.Println(bearingRad)
-//	info.Println(bearingDeg)
-//}
-//
-//func TestSphereCalculator_PointOnBearing(t *testing.T) {
-//	info.Println(p1, "->", p2)
-//	calc := &SphereCalculator{}
-//	dist := calc.Distance(p1, p2)
-//	bearingDeg := calc.Bearing(p1, p2)
-//	p3 := calc.PointOnBearing(p1, dist, bearingDeg, GeoCtx)
-//	info.Println(dist * EarthRadius)
-//	info.Println(bearingDeg)
-//	info.Println(p3)
-//}
+func TestSphereCalculator_Bearing(t *testing.T) {
+	calc := &geo.SphereCalculator{}
+	t.Log(calc.Bearing(p1, p2))
+}
+
+func TestSphereCalculator_PointOnBearing(t *testing.T) {
+	t.Log(p1, "->", p2)
+	calc := &geo.SphereCalculator{}
+	bearingDeg := calc.Bearing(p1, p2)
+	p3 := calc.PointOnBearing(p2, 3000.0/geo.EarthRadius, bearingDeg, geo.GeoCtx)
+	p4 := calc.PointOnBearing(p3, 600/geo.EarthRadius, bearingDeg-90, geo.GeoCtx)
+	t.Log(bearingDeg)
+	t.Log(p3)
+	t.Log(p4)
+}
+
 //
 //func TestSphereCalculator_Mid(t *testing.T) {
 //	info.Println(p1, "->", p2)

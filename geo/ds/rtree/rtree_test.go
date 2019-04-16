@@ -35,7 +35,7 @@ func TestMain(m *testing.M) {
 			fmt.Println(r)
 		}
 	}()
-	rt, _ = NewRtree(2, 4)
+	rt, _ = NewRtree(2, 4, &UglySplitter{})
 	m.Run()
 }
 

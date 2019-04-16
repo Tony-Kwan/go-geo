@@ -1,5 +1,10 @@
 package test
 
+import (
+	"github.com/Tony-Kwan/go-geo/geo"
+	"testing"
+)
+
 //func TestVectorCalculator_LngLat2nE(t *testing.T) {
 //	fmt.Println(newNE(0, 90))
 //}
@@ -28,15 +33,23 @@ package test
 //	fmt.Println(sphereCalc.Mid(from, to, GeoCtx))
 //}
 //
-//func TestVectorCalculator_PointOnBearing(t *testing.T) {
-//	info.Println(p1, "->", p2)
-//	dist := vectorCalc.Distance(p1, p2)
-//	bearingDeg := vectorCalc.Bearing(p1, p2)
-//	p3 := vectorCalc.PointOnBearing(p1, dist, bearingDeg, GeoCtx)
-//	info.Println(dist * EarthRadius)
-//	info.Println(bearingDeg)
-//	info.Println(p3)
-//}
+
+func TestVectorCalculator_Bearing(t *testing.T) {
+	calc := &geo.VectorCalculator{}
+	t.Log(calc.Bearing(p1, p2))
+}
+
+func TestVectorCalculator_PointOnBearing(t *testing.T) {
+	t.Log(p1, "->", p2)
+	vectorCalc := &geo.VectorCalculator{}
+	bearingDeg := vectorCalc.Bearing(p1, p2)
+	p3 := vectorCalc.PointOnBearing(p2, 3000.0/geo.EarthRadius, bearingDeg, geo.GeoCtx)
+	p4 := vectorCalc.PointOnBearing(p3, 600/geo.EarthRadius, bearingDeg-90, geo.GeoCtx)
+	t.Log(bearingDeg)
+	t.Log(p3)
+	t.Log(p4)
+}
+
 //
 //func TestVectorCalculator_Distance(t *testing.T) {
 //	p1 := NewPoint(-83.85829925537108, 37.351328227794866, nil)

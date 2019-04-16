@@ -17,14 +17,17 @@ type Rtree struct {
 	minEntries int
 	maxEntries int
 	numEntries int
+
+	splitter Splitter
 }
 
-func NewRtree(m, M int) (*Rtree, error) {
+func NewRtree(m, M int, splitter Splitter) (*Rtree, error) {
 	//TODO: verify m and M
 	return &Rtree{
 		root:       &rnode{bounds: *geo.NewRectangle(0, 0, 0, 0, geo.CartesianCtx), isLeaf: true},
 		minEntries: m,
 		maxEntries: M,
+		splitter:   splitter,
 	}, nil
 }
 
@@ -98,15 +101,7 @@ func (r *Rtree) chooseLeaf(node Spatial, entry Spatial) Spatial {
 }
 
 func (r *Rtree) splitNode(node *rnode) (*rnode, *rnode) {
-	l := node
-	ll := &rnode{parent: node.parent, entries: node.entries[r.maxEntries:node.NumEntries():node.NumEntries()], isLeaf: node.isLeaf}
-	l.entries = node.entries[0:r.maxEntries:r.maxEntries]
-	if !ll.isLeaf {
-		for i := range ll.entries {
-			ll.entries[i].(*rnode).parent = ll
-		}
-	}
-	return l, ll
+	return r.splitter.Split(r, node)
 }
 
 func (r *Rtree) adjustTree(n, nn *rnode) (*rnode, *rnode) {
