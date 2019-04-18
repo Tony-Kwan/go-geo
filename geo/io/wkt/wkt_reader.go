@@ -92,23 +92,21 @@ func (r WktReader) Read(wkt string) (interface{}, error) {
 		return nil, err
 	}
 
+	var geometry interface{}
 	switch strings.ToUpper(wktType) {
 	case point:
-		return r.readPoint()
+		geometry, err = r.readPoint()
 	case lineString:
-		pts, err := r.readLineString()
-		if err != nil {
-			return nil, err
-		}
-		if err := r.getNextEOF(); err != nil {
-			return nil, err
-		}
-		return pts, nil
+		geometry, err = r.readLineString()
 	case polygon:
-		return r.readPolygon()
+		geometry, err = r.readPolygon()
 	default:
 		return nil, fmt.Errorf("unsupported wktType: %s", wktType)
 	}
+	if err != nil {
+		return nil, err
+	}
+	return geometry, r.getNextEOF()
 }
 
 func skip(*lex.Scanner, *machines.Match) (interface{}, error) {
@@ -154,7 +152,7 @@ func (r *WktReader) readPoint() (*geo.Point, error) {
 	if err != nil {
 		return nil, err
 	}
-	err = r.getNextRightParenAndEOF()
+	_, err = r.getNextExpectedToken(tokenRightParen)
 	if err != nil {
 		return nil, err
 	}
@@ -220,9 +218,6 @@ func (r *WktReader) readPolygon() (*geo.Polygon, error) {
 		return geo.NewPolygon(make(geo.LinearRing, 0)), nil
 	}
 
-	if err = r.getNextEOF(); err != nil {
-		return nil, err
-	}
 	return geo.NewPolygon(rings[0]), nil
 }
 

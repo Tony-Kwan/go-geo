@@ -50,7 +50,7 @@ func (r LinearRing) MakeCCW() LinearRing {
 
 func (r LinearRing) String() string {
 	var buf bytes.Buffer
-	buf.WriteString("LINEARRING(")
+	buf.WriteString("LINEARRING (")
 	n := r.GetNumPoints()
 	for i, point := range r {
 		buf.WriteString(fmt.Sprintf("%s %s", strconv.FormatFloat(point.X(), 'f', -1, 64), strconv.FormatFloat(point.Y(), 'f', -1, 64)))
