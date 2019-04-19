@@ -34,6 +34,21 @@ func (c *Circle) clone() Shape {
 	return NewCircle(c.center.X(), c.center.Y(), c.radius, c.ctx)
 }
 
+func (c *Circle) ToPolygon(edgeCount int) *Polygon {
+	if edgeCount < 3 {
+		panic("edgeCount must gte 3")
+	}
+	ring := make(LinearRing, 0)
+	delta := 360. / float64(edgeCount)
+	for deg := 0.; deg <= 360.; deg += delta {
+		ring = append(ring, *c.GetContext().GetCalculator().PointOnBearing(c.center, c.radius, deg, c.ctx))
+	}
+	if !ring[0].ApproxEqualWithEps(&ring[len(ring)-1], E15) {
+		ring = append(ring, *NewPoint(ring[0].x, ring[0].y, ring[0].ctx))
+	}
+	return NewPolygon(ring)
+}
+
 func (c *Circle) String() string {
 	return fmt.Sprintf(
 		"CIRCLE((%s, %s), %s)",

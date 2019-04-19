@@ -93,34 +93,37 @@ func (vc *VectorCalculator) areaOfPolygon(p *Polygon) float64 {
 	return sum
 }
 
-func (vc *VectorCalculator) MinCoverCircle(points ...*Point) (*Circle, error) {
+func (vc *VectorCalculator) MinCoverCircle(points ...Point) (*Circle, error) {
 	n := len(points)
 	if n == 0 {
 		return nil, errors.New("empty points")
 	}
 
-	ps := make([]*Point, n)
-	copy(ps, points)
+	ps := make([]Point, n)
+	//copy(ps, points)
+	for i := range points {
+		ps[i] = *NewPoint(points[i].x, points[i].y, points[i].ctx)
+	}
 	//TODO: fix error after shuffle
 	//rand.Shuffle(n, func(i, j int) {
 	//	ps[i], ps[j] = ps[j], ps[i]
 	//})
-	c, r := ps[0], 0.
+	c, r := &ps[0], 0.
 	var err error
 	for i := 1; i < n; i++ {
-		if vc.Distance(ps[i], c) > r {
-			c, r = ps[i], 0.
+		if vc.Distance(&ps[i], c) > r {
+			c, r = &ps[i], 0.
 			for j := 0; j < i; j++ {
-				if vc.Distance(ps[j], c) > r {
-					c = vc.Mid(ps[i], ps[j], nil)
-					r = vc.Distance(c, ps[j])
+				if vc.Distance(&ps[j], c) > r {
+					c = vc.Mid(&ps[i], &ps[j], nil)
+					r = vc.Distance(&ps[j], c)
 					for k := 0; k < j; k++ {
-						if vc.Distance(ps[k], c) > r {
-							c, err = vc.Circumcenter(ps[i], ps[j], ps[k])
+						if vc.Distance(&ps[k], c) > r {
+							c, err = vc.Circumcenter(&ps[i], &ps[j], &ps[k])
 							if err != nil {
 								return nil, err
 							}
-							r = Max(vc.Distance(c, ps[k]), Max(vc.Distance(c, ps[i]), vc.Distance(c, ps[j])))
+							r = Max(vc.Distance(c, &ps[k]), Max(vc.Distance(c, &ps[i]), vc.Distance(c, &ps[j])))
 						}
 					}
 				}

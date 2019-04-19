@@ -39,6 +39,10 @@ func (p *Polygon) GetNumPoints() int {
 	return p.shell.GetNumPoints()
 }
 
+func (p *Polygon) GetShell() LinearRing {
+	return p.shell
+}
+
 func (p *Polygon) IsSimple() bool {
 	return p.shell.IsSimple()
 }
