@@ -105,20 +105,22 @@ func (vc *VectorCalculator) MinCoverCircle(points ...Point) (*Circle, error) {
 		ps[i] = *NewPoint(points[i].x, points[i].y, points[i].ctx)
 	}
 	//TODO: fix error after shuffle
+	//rand.Seed(time.Now().Unix())
 	//rand.Shuffle(n, func(i, j int) {
 	//	ps[i], ps[j] = ps[j], ps[i]
 	//})
 	c, r := &ps[0], 0.
 	var err error
+	const eps = E8
 	for i := 1; i < n; i++ {
-		if vc.Distance(&ps[i], c) > r {
+		if vc.Distance(&ps[i], c) > r+eps {
 			c, r = &ps[i], 0.
 			for j := 0; j < i; j++ {
-				if vc.Distance(&ps[j], c) > r {
+				if vc.Distance(&ps[j], c) > r+eps {
 					c = vc.Mid(&ps[i], &ps[j], nil)
 					r = vc.Distance(&ps[j], c)
 					for k := 0; k < j; k++ {
-						if vc.Distance(&ps[k], c) > r {
+						if vc.Distance(&ps[k], c) > r+eps {
 							c, err = vc.Circumcenter(&ps[i], &ps[j], &ps[k])
 							if err != nil {
 								return nil, err
