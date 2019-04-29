@@ -89,5 +89,5 @@ func (p *Polygon) ConvexHull() (*Polygon, error) {
 }
 
 func (p *Polygon) String() string {
-	return "POLYGON(" + p.shell.String()[10:] + ")"
+	return "POLYGON (" + p.shell.String()[11:] + ")"
 }
