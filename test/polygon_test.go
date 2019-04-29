@@ -52,7 +52,7 @@ func TestPolygon_Contain(t *testing.T) {
 }
 
 func TestPolygon_CoverByCircles(t *testing.T) {
-	cs, err := polygon.CoverByCircles(20)
+	cs, err := polygon.CoverByCircles(1)
 	if err != nil {
 		t.Error(err)
 		return
@@ -66,5 +66,11 @@ func TestPolygon_CoverByCircles(t *testing.T) {
 		s += polygon.String() + ","
 		s = s[:len(s)-1] + ")"
 		clipboard.WriteAll(s)
+	}
+}
+
+func BenchmarkPolygon_CoverByCircles(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		polygon.CoverByCircles(5)
 	}
 }

@@ -117,7 +117,7 @@ func (p *Polygon) Contain(pt *Point) bool {
 }
 
 func (p *Polygon) CoverByCircles(k int) ([]Circle, error) {
-	var density = 100
+	var density = 50
 	ps := make([]Point, 0)
 	n := p.GetNumPoints()
 	calc := p.GetContext().GetCalculator()
