@@ -27,6 +27,9 @@ func (*AbstractShape) GetCenter() *Point {
 }
 
 func (s *AbstractShape) GetContext() GeoContext {
+	if s.ctx == nil {
+		return GeoCtx
+	}
 	return s.ctx
 }
 

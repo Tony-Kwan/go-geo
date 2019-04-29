@@ -47,6 +47,17 @@ func (p *Polygon) GetArea() float64 {
 	return p.GetContext().GetCalculator().Area(p)
 }
 
+func (p *Polygon) Bounds() *Rectangle {
+	rect := NewRectangle(math.MaxFloat64, -math.MaxFloat64, math.MaxFloat64, -math.MaxFloat64, p.GetContext())
+	for _, pt := range p.Shell {
+		rect.minX = math.Min(rect.minX, pt.x)
+		rect.maxX = math.Max(rect.maxX, pt.x)
+		rect.minY = math.Min(rect.minY, pt.y)
+		rect.maxY = math.Max(rect.maxY, pt.y)
+	}
+	return rect
+}
+
 func (p *Polygon) ConvexHull() (*Polygon, error) {
 	//TODO: validation
 	n := p.GetNumPoints() - 1
@@ -82,6 +93,80 @@ func (p *Polygon) ConvexHull() (*Polygon, error) {
 	}
 	result[top+1] = Point{x: result[0].x, y: result[0].y}
 	return &Polygon{Shell: result}, nil
+}
+
+func (p *Polygon) Contain(pt *Point) bool {
+	n := p.GetNumPoints()
+	var p1, p2 Point
+	var c int
+	for i := 0; i < n-1; i++ {
+		p1 = p.Shell[i]
+		p2 = p.Shell[i+1]
+		if ((pt.y >= p1.y) && (pt.y <= p2.y)) || ((pt.y >= p2.y) && (pt.y <= p1.y)) {
+			duT := (pt.y - p1.y) / (p2.y - p1.y)
+			duXT := p1.x + duT*(p2.x-p1.x)
+			if pt.x == duXT {
+				return false
+			}
+			if pt.x > duXT {
+				c++
+			}
+		}
+	}
+	return c%2 == 1
+}
+
+func (p *Polygon) CoverByCircles(k int) ([]Circle, error) {
+	var density = 100
+	ps := make([]Point, 0)
+	n := p.GetNumPoints()
+	calc := p.GetContext().GetCalculator()
+	for i := 0; i < n; i++ {
+		p1, p2 := p.Shell[i], p.Shell[(i+1)%n]
+		dDis := calc.Distance(&p1, &p2) / float64(density)
+		bearing := calc.Bearing(&p1, &p2)
+		for j := 0; j < density; j++ {
+			ps = append(ps, *calc.PointOnBearing(&p1, dDis*float64(j), bearing, p.GetContext()))
+		}
+	}
+
+	bound := p.Bounds()
+	dx, dy := (bound.maxX-bound.minX)/float64(density), (bound.maxY-bound.minY)/float64(density)
+	for i := 1; i < density; i++ {
+		for j := 1; j < density; j++ {
+			pt := NewPoint(bound.minX+dx*float64(i), bound.minY+dy*float64(j), p.GetContext())
+			if p.Contain(pt) {
+				ps = append(ps, *pt)
+			}
+		}
+	}
+
+	dataset := Observations{}
+	for _, p := range ps {
+		dataset = append(dataset, Observation{
+			Position: NewPoint(p.X(), p.Y(), nil),
+			Value:    nil,
+		})
+	}
+	km := NewKmeans(&VectorCalculator{})
+	result, err := km.Partition(dataset, k)
+	if err != nil {
+		return nil, err
+	}
+
+	circles := make([]Circle, 0)
+	for _, cluster := range result.Clusters {
+		pts := make([]*Point, len(cluster))
+		for i, o := range cluster {
+			pts[i] = o.Position
+		}
+		circle, err := vectorCalc.MinCoverCircle(pts...)
+		if err != nil {
+			return nil, err
+		}
+		circles = append(circles, *circle)
+	}
+	return circles, nil
 }
 
 func (p *Polygon) String() string {

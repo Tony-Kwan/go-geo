@@ -41,7 +41,7 @@ func (c *Circle) ToPolygon(edgeCount int) *Polygon {
 	ring := make(LinearRing, 0)
 	delta := 360. / float64(edgeCount)
 	for deg := 0.; deg <= 360.; deg += delta {
-		ring = append(ring, *c.ctx.GetCalculator().PointOnBearing(c.center, c.radius, deg, c.ctx))
+		ring = append(ring, *c.GetContext().GetCalculator().PointOnBearing(c.center, c.radius, deg, c.ctx))
 	}
 	if !ring[0].ApproxEqualWithEps(&ring[len(ring)-1], E15) {
 		ring = append(ring, *NewPoint(ring[0].x, ring[0].y, ring[0].ctx))

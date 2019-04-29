@@ -38,3 +38,33 @@ func TestPolygon_ConvexHull(t *testing.T) {
 	t.Log(wkt)
 	clipboard.WriteAll(wkt)
 }
+
+func TestPolygon_Contain(t *testing.T) {
+	ps := []*geo.Point{
+		geo.NewPoint(-108.97235870361327, 41.0645980777181, nil),
+		geo.NewPoint(-125.09513854980467, 38.05160572175913, nil),
+		geo.NewPoint(-97.70038604736327, 36.389782114733904, nil),
+	}
+
+	for _, p := range ps {
+		t.Log(polygon.Contain(p))
+	}
+}
+
+func TestPolygon_CoverByCircles(t *testing.T) {
+	cs, err := polygon.CoverByCircles(20)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	{
+		s := "GEOMETRYCOLLECTION("
+		for _, c := range cs {
+			s += c.ToPolygon(32).String() + ","
+		}
+		s += polygon.String() + ","
+		s = s[:len(s)-1] + ")"
+		clipboard.WriteAll(s)
+	}
+}
