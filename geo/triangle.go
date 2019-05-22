@@ -2,6 +2,7 @@ package geo
 
 import (
 	"fmt"
+	"math"
 	"strconv"
 )
 
@@ -21,6 +22,12 @@ func NewTriangle(a, b, c *Point, ctx GeoContext) *Triangle {
 
 func (tri *Triangle) GetArea() float64 {
 	return tri.GetContext().GetCalculator().Area(tri)
+}
+
+func (tri *Triangle) IsDisjoint(other *Triangle) bool {
+	a1, b1, c1 := pointHash(tri.a), pointHash(tri.b), pointHash(tri.c)
+	a2, b2, c2 := pointHash(other.a), pointHash(other.b), pointHash(other.c)
+	return len(map[uint64]bool{a1: true, b1: true, c1: true, a2: true, b2: true, c2: true}) != 4
 }
 
 func (tri *Triangle) String() string {
@@ -46,4 +53,8 @@ func (tri *Triangle) contains(point *Point) bool {
 	u := (dot11*dot02 - dot01*dot12) * invDenom
 	v := (dot00*dot12 - dot01*dot02) * invDenom
 	return (u >= 0) && (v >= 0) && (u+v < 1)
+}
+
+func pointHash(p *Point) uint64 {
+	return math.Float64bits(p.x) ^ math.Float64bits(p.y)
 }
