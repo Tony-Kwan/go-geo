@@ -86,10 +86,10 @@ func (calc *SphereCalculator) areaOfRectangle(rect *Rectangle) float64 {
 }
 
 func (calc *SphereCalculator) areaOfTriangle(tri *Triangle) float64 {
-	//a, b, c := calc.Distance(tri.B, tri.C), calc.Distance(tri.A, tri.C), calc.Distance(tri.A, tri.B)
-	//A := Acos((Cos(a) - Cos(b)*Cos(c)) / Sin(b) / Sin(c))
-	//B := Acos((Cos(b) - Cos(a)*Cos(c)) / Sin(a) / Sin(c))
-	//C := Acos((Cos(c) - Cos(a)*Cos(b)) / Sin(a) / Sin(b))
+	//A, B, C := calc.Distance(tri.B, tri.C), calc.Distance(tri.A, tri.C), calc.Distance(tri.A, tri.B)
+	//A := Acos((Cos(A) - Cos(B)*Cos(C)) / Sin(B) / Sin(C))
+	//B := Acos((Cos(B) - Cos(A)*Cos(C)) / Sin(A) / Sin(C))
+	//C := Acos((Cos(C) - Cos(A)*Cos(B)) / Sin(A) / Sin(B))
 	//fmt.Println(ToDegrees(A), ToDegrees(B), ToDegrees(C))
 	//return A + B + C - Pi
 	return 0

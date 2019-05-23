@@ -72,10 +72,10 @@ func (vc *VectorCalculator) Area(s Shape) float64 {
 }
 
 func (vc *VectorCalculator) areaOfTriangle(tri *Triangle) float64 {
-	na, nb, nc := newNEWithPoint(tri.a), newNEWithPoint(tri.b), newNEWithPoint(tri.c)
-	A := ToRadians(vc.bearing(tri.a, tri.c, nb))
-	B := ToRadians(vc.bearing(tri.b, tri.a, nc))
-	C := ToRadians(vc.bearing(tri.c, tri.b, na))
+	na, nb, nc := newNEWithPoint(tri.A), newNEWithPoint(tri.B), newNEWithPoint(tri.C)
+	A := ToRadians(vc.bearing(tri.A, tri.C, nb))
+	B := ToRadians(vc.bearing(tri.B, tri.A, nc))
+	C := ToRadians(vc.bearing(tri.C, tri.B, na))
 	A, B, C = Min(Pi*2-A, A), Min(Pi*2-B, B), Min(Pi*2-C, C)
 	//fmt.Println(ToDegrees(A), ToDegrees(B), ToDegrees(C))
 	return A + B + C - Pi
