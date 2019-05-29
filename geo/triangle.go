@@ -24,10 +24,10 @@ func (tri *Triangle) GetArea() float64 {
 	return tri.GetContext().GetCalculator().Area(tri)
 }
 
-func (tri *Triangle) IsDisjoint(other *Triangle) bool {
+func (tri *Triangle) IsConnected(other *Triangle) bool {
 	a1, b1, c1 := pointHash(tri.A), pointHash(tri.B), pointHash(tri.C)
 	a2, b2, c2 := pointHash(other.A), pointHash(other.B), pointHash(other.C)
-	return len(map[uint64]bool{a1: true, b1: true, c1: true, a2: true, b2: true, c2: true}) != 4
+	return len(map[uint64]bool{a1: true, b1: true, c1: true, a2: true, b2: true, c2: true}) == 4 //TODO: check if triangle contain another point of triangle
 }
 
 func (tri *Triangle) String() string {
