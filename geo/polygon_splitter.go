@@ -8,7 +8,7 @@ import (
 	"strings"
 )
 
-func (p *Polygon) Split() ([]Polygon, error) {
+func (p *Polygon) Split(vertexLimit int) ([]Polygon, error) {
 	tris, err := p.Triangulate()
 	if err != nil {
 		return nil, errors.WithStack(err)
@@ -21,7 +21,7 @@ func (p *Polygon) Split() ([]Polygon, error) {
 		}
 	}
 	sg := splitterGroup{graph: graph, tris: tris, n: n, gid: make([]int, n), now: 1, cnt: make([]int, n)}
-	sg.search(0)
+	sg.search(0, vertexLimit)
 
 	{
 		wkts := make([]string, 0)
@@ -47,15 +47,15 @@ type splitterGroup struct {
 	cnt   []int
 }
 
-func (sg *splitterGroup) search(k int) {
+func (sg *splitterGroup) search(k, vertexLimit int) {
 	for i := 0; i < sg.n; i++ {
 		if sg.gid[i] == 0 && sg.graph[k][i] {
 			sg.gid[i] = sg.now
 			sg.cnt[sg.now]++
-			if sg.cnt[sg.now] >= 19 {
+			if sg.cnt[sg.now] >= vertexLimit-1 {
 				sg.now++
 			}
-			sg.search(i)
+			sg.search(i, vertexLimit)
 		}
 	}
 }
