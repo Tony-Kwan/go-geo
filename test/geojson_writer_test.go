@@ -1,6 +1,7 @@
 package test
 
 import (
+	"github.com/Tony-Kwan/go-geo/geo"
 	"github.com/Tony-Kwan/go-geo/geo/io/geojson"
 	"github.com/Tony-Kwan/go-geo/geo/io/wkt"
 	"github.com/atotto/clipboard"
@@ -17,5 +18,13 @@ func TestGeojson_EncodePolygon(t *testing.T) {
 		"fill":           "#a6ebf4",
 		"fill-opacity":   0.5,
 	})
+	clipboard.WriteAll(out)
+}
+
+func TestGeojson_EncodePolygons(t *testing.T) {
+	p1 := wkt.MustPolygon(wkt.WktReader{}.Read("POLYGON((-125.48143431544301 48.948882828004685,-125.47899752855298 48.9262328193777,-125.43090820312497 48.934928974136284,-125.48143431544301 48.948882828004685))"))
+	p2 := wkt.MustPolygon(wkt.WktReader{}.Read("POLYGON((-125.43894007802008 48.931920293578486,-125.43749302625652 48.90958431384354,-125.38551449775694 48.926547387547174,-125.39115384221074 48.938403488223685,-125.43894007802008 48.931920293578486))"))
+	ps := []geo.Polygon{*p1, *p2}
+	out := geojson.GeojsonWriter{}.EncodePolygons(ps)
 	clipboard.WriteAll(out)
 }
