@@ -30,6 +30,16 @@ func (tri *Triangle) IsConnected(other *Triangle) bool {
 	return len(map[uint64]bool{a1: true, b1: true, c1: true, a2: true, b2: true, c2: true}) == 4 //TODO: check if triangle contain another point of triangle
 }
 
+func (tri Triangle) ToPolygon() Polygon {
+	shell := LinearRing{
+		*tri.A,
+		*tri.B,
+		*tri.C,
+		*tri.A,
+	}
+	return *NewPolygon(shell)
+}
+
 func (tri *Triangle) String() string {
 	return fmt.Sprintf(
 		"POLYGON((%s %s, %s %s, %s %s, %s %s))",
