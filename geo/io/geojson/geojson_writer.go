@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/Tony-Kwan/go-geo/geo"
 	"math/rand"
+	"time"
 )
 
 type GeojsonWriter struct{}
@@ -63,5 +64,6 @@ func (w GeojsonWriter) EncodePolygons(ps []geo.Polygon) string {
 }
 
 func randomColor() string {
-	return fmt.Sprintf("#%x%x%x", rand.Intn(255), rand.Intn(255), rand.Intn(255))
+	r := rand.New(rand.NewSource(time.Now().UnixNano()))
+	return fmt.Sprintf("#%x%x%x", r.Intn(255), r.Intn(255), r.Intn(255))
 }
