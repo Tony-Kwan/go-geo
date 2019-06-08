@@ -51,18 +51,25 @@ func (tri *Triangle) String() string {
 }
 
 func (tri *Triangle) contains(point *Point) bool {
-	v0 := NewVector2(tri.A, tri.C)
-	v1 := NewVector2(tri.A, tri.B)
-	v2 := NewVector2(tri.A, point)
-	dot00 := v0.dot(v0)
-	dot01 := v0.dot(v1)
-	dot02 := v0.dot(v2)
-	dot11 := v1.dot(v1)
-	dot12 := v1.dot(v2)
-	invDenom := 1.0 / (dot00*dot11 - dot01*dot01)
-	u := (dot11*dot02 - dot01*dot12) * invDenom
-	v := (dot00*dot12 - dot01*dot02) * invDenom
-	return (u >= 0) && (v >= 0) && (u+v < 1)
+	switch tri.GetContext().(type) {
+	case *SpatialContext:
+		v1, v2, v3 := newNEWithPoint(tri.A), newNEWithPoint(tri.B), newNEWithPoint(tri.C)
+		v0 := newNEWithPoint(point)
+		return v1.cross(v2).dot(v0) >= 0 && v2.cross(v3).dot(v0) >= 0 && v3.cross(v1).dot(v0) >= 0
+	default:
+		v0 := NewVector2(tri.A, tri.C)
+		v1 := NewVector2(tri.A, tri.B)
+		v2 := NewVector2(tri.A, point)
+		dot00 := v0.dot(v0)
+		dot01 := v0.dot(v1)
+		dot02 := v0.dot(v2)
+		dot11 := v1.dot(v1)
+		dot12 := v1.dot(v2)
+		invDenom := 1.0 / (dot00*dot11 - dot01*dot01)
+		u := (dot11*dot02 - dot01*dot12) * invDenom
+		v := (dot00*dot12 - dot01*dot02) * invDenom
+		return (u >= 0) && (v >= 0) && (u+v < 1)
+	}
 }
 
 func pointHash(p *Point) uint64 {

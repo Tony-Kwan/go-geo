@@ -1,6 +1,7 @@
 package geo
 
 import (
+	"errors"
 	"fmt"
 	"github.com/Tony-Kwan/go-geo/geo/internal/ds"
 	"github.com/deckarep/golang-set"
@@ -27,7 +28,7 @@ func (p *Polygon) Triangulate() ([]Triangle, error) {
 	node := points.Head
 	for i := 0; i < points.Size(); i, node = i+1, node.Next {
 		curr := node.Elem.(*earClippingPoint)
-		curr.isReflex = checkIsReflex(node)
+		curr.isReflex = p.checkIsReflex(node)
 	}
 	// find ear
 	node = points.Head
@@ -42,22 +43,37 @@ func (p *Polygon) Triangulate() ([]Triangle, error) {
 
 	//clip ear
 	ret := make([]Triangle, 0, n-2)
+	var cnt int
 	for node := points.Head; ; {
 		curr := node.Elem.(*earClippingPoint)
 		prev := node.Prev.Elem.(*earClippingPoint)
 		next := node.Next.Elem.(*earClippingPoint)
-		if points.Size() < 3 {
-			//ret = append(ret, Triangle{A: &prev.Point, B: &curr.Point, C: &next.Point})
+		if points.Size() <= 3 {
+			ret = append(ret, Triangle{A: &prev.Point, B: &curr.Point, C: &next.Point})
 			break
 		}
 		if !curr.isEar {
 			node = node.Next
+			cnt++
+			if cnt >= points.Size() {
+				it := points.Iterator()
+				shell := make(LinearRing, 0)
+				for it.Next() {
+					pt := it.Value().(*earClippingPoint)
+					shell = append(shell, pt.Point)
+					fmt.Println(pt.isReflex, pt.isEar)
+				}
+				shell = append(shell, shell[0])
+				fmt.Println(NewPolygon(shell).String())
+				return nil, errors.New("infinite loop: program should not run here")
+			}
 			continue
 		}
+		cnt = 0
 		ret = append(ret, Triangle{A: &prev.Point, B: &curr.Point, C: &next.Point})
 		node = points.RemoveNode(node)
-		next.isReflex = checkIsReflex(node)
-		prev.isReflex = checkIsReflex(node.Prev)
+		next.isReflex = p.checkIsReflex(node)
+		prev.isReflex = p.checkIsReflex(node.Prev)
 		next.isEar = checkIsEar(node, points)
 		prev.isEar = checkIsEar(node.Prev, points)
 		//printVertexType(points)
@@ -65,11 +81,17 @@ func (p *Polygon) Triangulate() ([]Triangle, error) {
 	return ret, nil
 }
 
-func checkIsReflex(node *ds.Node) bool {
+func (p *Polygon) checkIsReflex(node *ds.Node) bool {
 	curr := node.Elem.(*earClippingPoint)
 	prev := node.Prev.Elem.(*earClippingPoint)
 	next := node.Next.Elem.(*earClippingPoint)
-	return curr.cross(&prev.Point, &next.Point) > 0.0
+	switch p.GetContext().(type) {
+	case *SpatialContext:
+		v1, v2, v3 := newNEWithPoint(&prev.Point), newNEWithPoint(&curr.Point), newNEWithPoint(&next.Point)
+		return v1.cross(v3).dot(v2) > 0
+	default:
+		return curr.cross(&prev.Point, &next.Point) > 0.0
+	}
 }
 
 func checkIsEar(node *ds.Node, list *ds.CircularLinkedList) bool {
