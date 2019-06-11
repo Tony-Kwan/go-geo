@@ -53,13 +53,13 @@ func TestPolygon_Split(t *testing.T) {
 		t.Error(err)
 		return
 	}
-	fmt.Println(len(ps))
-	//ps = append(ps, *polygon)
+
 	clipboard.WriteAll(geojson.GeojsonWriter{}.EncodePolygons(ps))
 	total := polygon.GetArea() * geo.EarthRadius2
 	fmt.Println("total_area=", total)
 	for _, p := range ps {
 		area := p.GetArea() * geo.EarthRadius2
-		fmt.Println(len(p.GetShell()), area, area/total*100)
+		fmt.Println(len(p.Shell), area, area/total*100)
 	}
+
 }

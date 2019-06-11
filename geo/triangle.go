@@ -2,7 +2,6 @@ package geo
 
 import (
 	"fmt"
-	"math"
 	"strconv"
 )
 
@@ -25,8 +24,8 @@ func (tri *Triangle) GetArea() float64 {
 }
 
 func (tri *Triangle) IsConnected(other *Triangle) bool {
-	a1, b1, c1 := pointHash(tri.A), pointHash(tri.B), pointHash(tri.C)
-	a2, b2, c2 := pointHash(other.A), pointHash(other.B), pointHash(other.C)
+	a1, b1, c1 := tri.A.pointHash(), tri.B.pointHash(), tri.C.pointHash()
+	a2, b2, c2 := other.A.pointHash(), other.B.pointHash(), other.C.pointHash()
 	return len(map[uint64]bool{a1: true, b1: true, c1: true, a2: true, b2: true, c2: true}) == 4 //TODO: check if triangle contain another point of triangle
 }
 
@@ -63,8 +62,4 @@ func (tri *Triangle) contains(point *Point) bool {
 	u := (dot11*dot02 - dot01*dot12) * invDenom
 	v := (dot00*dot12 - dot01*dot02) * invDenom
 	return (u >= 0) && (v >= 0) && (u+v < 1)
-}
-
-func pointHash(p *Point) uint64 {
-	return math.Float64bits(p.x) ^ math.Float64bits(p.y)
 }

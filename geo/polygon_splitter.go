@@ -8,9 +8,9 @@ import (
 
 func (p *Polygon) Split(vertexLimit int) ([]Polygon, error) {
 	order := make(map[uint64]int)
-	vertexCnt := len(p.shell) - 1
+	vertexCnt := len(p.Shell) - 1
 	for i := 0; i < vertexCnt; i++ {
-		order[pointHash(&p.shell[i])] = i
+		order[p.Shell[i].pointHash()] = i
 	}
 
 	tris, err := p.Triangulate()
@@ -33,15 +33,15 @@ func (p *Polygon) Split(vertexLimit int) ([]Polygon, error) {
 		if _, exists := m[sg.gid[i]]; !exists {
 			m[sg.gid[i]] = make(map[uint64]*Point)
 		}
-		m[sg.gid[i]][pointHash(tri.A)] = tri.A
-		m[sg.gid[i]][pointHash(tri.B)] = tri.B
-		m[sg.gid[i]][pointHash(tri.C)] = tri.C
+		m[sg.gid[i]][tri.A.pointHash()] = tri.A
+		m[sg.gid[i]][tri.B.pointHash()] = tri.B
+		m[sg.gid[i]][tri.C.pointHash()] = tri.C
 	}
 	ps := make([]Polygon, 0)
 	for _, v := range m {
 		ops, i := make(ds.OrderObjs, len(v)), 0
 		for _, p := range v {
-			ops[i], i = ds.OrderObj{Obj: p, Order: order[pointHash(p)]}, i+1
+			ops[i], i = ds.OrderObj{Obj: p, Order: order[p.pointHash()]}, i+1
 		}
 		sort.Sort(ops)
 		shell := make(LinearRing, len(v)+1)

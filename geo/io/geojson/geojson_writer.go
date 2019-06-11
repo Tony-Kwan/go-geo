@@ -24,7 +24,7 @@ type Geojson struct {
 func (w GeojsonWriter) EncodePolygon(polygon geo.Polygon, properties map[string]interface{}) string {
 	geojson := Geojson{Type: "Feature", Properties: properties, Geometry: GeometryInfo{Type: "Polygon"}}
 	coord := make([][]float64, 0)
-	for _, point := range polygon.GetShell() {
+	for _, point := range polygon.Shell {
 		coord = append(coord, []float64{point.X(), point.Y()})
 	}
 	geojson.Geometry.Coordinates = [][][]float64{coord}
@@ -39,7 +39,7 @@ func (w GeojsonWriter) EncodePolygons(ps []geo.Polygon) string {
 	features := make([]map[string]interface{}, 0)
 	for _, p := range ps {
 		coord := make([][]float64, 0)
-		for _, point := range p.GetShell() {
+		for _, point := range p.Shell {
 			coord = append(coord, []float64{point.X(), point.Y()})
 		}
 		feature := map[string]interface{}{

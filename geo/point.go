@@ -2,6 +2,7 @@ package geo
 
 import (
 	"fmt"
+	"math"
 	"strconv"
 )
 
@@ -70,4 +71,8 @@ func (p *Point) ApproxEqualWithEps(another *Point, eps float64) bool {
 		return false
 	}
 	return ApproxEqual(p.x, another.x, eps) && ApproxEqual(p.y, another.y, eps)
+}
+
+func (p Point) pointHash() uint64 {
+	return math.Float64bits(p.x) ^ math.Float64bits(p.y)
 }

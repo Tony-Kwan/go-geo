@@ -44,6 +44,17 @@ func (calc *SphereCalculator) PointOnBearing(from *Point, distRad, bearingDeg fl
 	return NewPoint((Mod(ToDegrees(endLng)+540, 360))-180, ToDegrees(endLat), ctx)
 }
 
+func (SphereCalculator) MeanPosition(points ...*Point) *Point {
+	meanPoint := NewPoint(0, 0, nil)
+	for _, p := range points {
+		meanPoint.x += p.x
+		meanPoint.y += p.y
+	}
+	meanPoint.x /= float64(len(points))
+	meanPoint.y /= float64(len(points))
+	return meanPoint
+}
+
 func (calc *SphereCalculator) Mid(from, to *Point, ctx GeoContext) *Point {
 	if from.Equals(to) {
 		return from.clone().(*Point)

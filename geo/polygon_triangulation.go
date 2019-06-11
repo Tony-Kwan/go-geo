@@ -17,7 +17,7 @@ type earClippingPoint struct {
 // O(n²)
 func (p *Polygon) Triangulate() ([]Triangle, error) {
 	//TODO: validate polygon
-	var shell = p.shell.MakeCCW()[:p.shell.GetNumPoints()-1]
+	var shell = p.Shell.MakeCCW()[:p.Shell.GetNumPoints()-1]
 	n := shell.GetNumPoints()
 	points := ds.NewCircularLinkedList()
 	for i, p := range shell {
