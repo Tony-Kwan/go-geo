@@ -10,4 +10,6 @@ type Calculator interface {
 	PointOnBearing(from *Point, distRad, bearingDeg float64, ctx GeoContext) *Point
 
 	Area(s Shape) float64
+
+	MeanPosition(points ...*Point) *Point
 }
