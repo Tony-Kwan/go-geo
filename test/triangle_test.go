@@ -25,7 +25,7 @@ func TestTriangle_IsDisjoint(t *testing.T) {
 	}
 	for i := 0; i < n; i++ {
 		for j := 0; j < n; j++ {
-			if tris[i].IsDisjoint(&tris[j]) {
+			if tris[i].IsDisjoint(tris[j]) {
 				mat[i][j] = 0
 			} else {
 				mat[i][j] = 1

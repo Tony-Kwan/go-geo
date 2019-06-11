@@ -60,12 +60,12 @@ func (km *Kmeans) partition(dataset Observations, k int) (*ClusterResult, error)
 	return result, nil
 }
 
-func (km *Kmeans) initCenteres(dataset Observations, k int) []*Point {
+func (km *Kmeans) initCenteres(dataset Observations, k int) []Point {
 	rand.Seed(time.Now().UnixNano())
 
 	n := len(dataset)
 	firstIdx := rand.Intn(n)
-	centers := make([]*Point, k)
+	centers := make([]Point, k)
 	centers[0] = dataset[firstIdx].Position
 	for i := 1; i < k; i++ {
 		maxDis, maxIdx := -math.MaxFloat64, -1
@@ -96,7 +96,7 @@ func (km *Kmeans) initCenteres(dataset Observations, k int) []*Point {
 	return centers
 }
 
-func (km *Kmeans) nearestCenter(centers []*Point, point *Point) int {
+func (km *Kmeans) nearestCenter(centers []Point, point Point) int {
 	minDis, minIdx := math.MaxFloat64, -1
 	var dis float64
 	for i := range centers {
@@ -109,10 +109,10 @@ func (km *Kmeans) nearestCenter(centers []*Point, point *Point) int {
 	return minIdx
 }
 
-func (km *Kmeans) recenter(obsl []Observations) []*Point {
-	centers := make([]*Point, len(obsl))
+func (km *Kmeans) recenter(obsl []Observations) []Point {
+	centers := make([]Point, len(obsl))
 	for i, obs := range obsl {
-		points := make([]*Point, len(obs))
+		points := make([]Point, len(obs))
 		for j, ob := range obs {
 			points[j] = ob.Position
 		}

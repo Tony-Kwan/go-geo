@@ -9,8 +9,8 @@ type Rectangle struct {
 	maxY float64
 }
 
-func NewRectangle(minX, maxX, minY, maxY float64, ctx GeoContext) *Rectangle {
-	return &Rectangle{
+func NewRectangle(minX, maxX, minY, maxY float64, ctx GeoContext) Rectangle {
+	return Rectangle{
 		AbstractShape: AbstractShape{ctx: ctx},
 		minX:          minX,
 		maxX:          maxX,
@@ -19,6 +19,6 @@ func NewRectangle(minX, maxX, minY, maxY float64, ctx GeoContext) *Rectangle {
 	}
 }
 
-func (rect *Rectangle) GetArea() float64 {
+func (rect Rectangle) GetArea() float64 {
 	return rect.ctx.GetCalculator().Area(rect)
 }

@@ -15,7 +15,7 @@ func (r LinearRing) IsValid() bool {
 	if n < 4 {
 		return false
 	}
-	return r[0].Equals(&r[n-1])
+	return r[0].Equals(r[n-1])
 }
 
 func (r LinearRing) IsSimple() bool {

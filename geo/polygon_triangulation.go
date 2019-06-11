@@ -54,7 +54,7 @@ func (p *Polygon) Triangulate() ([]Triangle, error) {
 			node = node.Next
 			continue
 		}
-		ret = append(ret, Triangle{A: &prev.Point, B: &curr.Point, C: &next.Point})
+		ret = append(ret, Triangle{A: prev.Point, B: curr.Point, C: next.Point})
 		node = points.RemoveNode(node)
 		next.isReflex = checkIsReflex(node)
 		prev.isReflex = checkIsReflex(node.Prev)
@@ -80,15 +80,15 @@ func checkIsEar(node *ds.Node, list *ds.CircularLinkedList) bool {
 	prev := node.Prev.Elem.(*earClippingPoint)
 	next := node.Next.Elem.(*earClippingPoint)
 	tri := Triangle{
-		A: &prev.Point,
-		B: &curr.Point,
-		C: &next.Point,
+		A: prev.Point,
+		B: curr.Point,
+		C: next.Point,
 	}
 	it := list.Iterator()
 	for it.Next() {
 		e := it.Value().(*earClippingPoint)
 		if e.isReflex {
-			if e != prev && e != next && tri.contains(&e.Point) {
+			if e != prev && e != next && tri.contains(e.Point) {
 				return false
 			}
 		}

@@ -69,11 +69,11 @@ type WktReader struct {
 	scanner *lex.Scanner
 }
 
-func MustPolygon(s interface{}, err error) *geo.Polygon {
+func MustPolygon(s interface{}, err error) geo.Polygon {
 	if err != nil {
 		panic(err)
 	}
-	ret, ok := s.(*geo.Polygon)
+	ret, ok := s.(geo.Polygon)
 	if !ok {
 		panic(fmt.Errorf("%v can't cast to *geo.Polygon", reflect.TypeOf(s)))
 	}
@@ -135,10 +135,10 @@ func printRestToken(scanner *lex.Scanner) {
 	}
 }
 
-func (r *WktReader) readPoint() (*geo.Point, error) {
+func (r *WktReader) readPoint() (geo.Point, error) {
 	tkt, err := r.getNextEmptyOrLeftParen()
 	if err != nil {
-		return nil, err
+		return geo.Point{}, err
 	}
 	if strings.Compare(tkt, tokenEmpty) == 0 {
 		return geo.NewPoint(0, 0, nil), nil
@@ -146,15 +146,15 @@ func (r *WktReader) readPoint() (*geo.Point, error) {
 
 	x, err := r.getNextNumber()
 	if err != nil {
-		return nil, err
+		return geo.Point{}, err
 	}
 	y, err := r.getNextNumber()
 	if err != nil {
-		return nil, err
+		return geo.Point{}, err
 	}
 	_, err = r.getNextExpectedToken(tokenRightParen)
 	if err != nil {
-		return nil, err
+		return geo.Point{}, err
 	}
 	return geo.NewPoint(x, y, nil), nil
 }
@@ -179,7 +179,7 @@ func (r *WktReader) readLineString() (geo.LineString, error) {
 		if err != nil {
 			return nil, err
 		}
-		pts = append(pts, *geo.NewPoint(x, y, nil))
+		pts = append(pts, geo.NewPoint(x, y, nil))
 
 		tkt, err = r.getNextCommaOfRightParen()
 		if err != nil {
@@ -192,10 +192,10 @@ func (r *WktReader) readLineString() (geo.LineString, error) {
 	return pts, nil
 }
 
-func (r *WktReader) readPolygon() (*geo.Polygon, error) {
+func (r *WktReader) readPolygon() (geo.Polygon, error) {
 	tkt, err := r.getNextEmptyOrLeftParen()
 	if err != nil {
-		return nil, err
+		return geo.Polygon{}, err
 	}
 	if strings.Compare(tkt, tokenEmpty) == 0 {
 		return geo.NewPolygon(make(geo.LinearRing, 0)), nil
@@ -205,11 +205,11 @@ func (r *WktReader) readPolygon() (*geo.Polygon, error) {
 	for {
 		pts, err := r.readLineString()
 		if err != nil {
-			return nil, err
+			return geo.Polygon{}, err
 		}
 		rings = append(rings, pts)
 		if tkt, err = r.getNextCommaOfRightParen(); err != nil {
-			return nil, err
+			return geo.Polygon{}, err
 		} else if strings.Compare(tkt, tokenRightParen) == 0 {
 			break
 		}
