@@ -73,7 +73,7 @@ func (sg *splitterGroup) search(k int) {
 func (sg *splitterGroup) dfs(k int) {
 	for i := 0; i < sg.n; i++ {
 		if sg.gid[i] == 0 && sg.graph[k][i] {
-			if sg.cnt[sg.gid[k]] >= sg.vertexLimit-2 {
+			if sg.cnt[sg.gid[k]] >= sg.vertexLimit-3 {
 				sg.now++
 				sg.gid[i] = sg.now
 			} else {
@@ -93,7 +93,7 @@ func (sg *splitterGroup) bfs(k int) {
 		if k == 0 {
 			sg.gid[k] = sg.now
 		} else {
-			if sg.cnt[sg.gid[sg.father[k]]] >= sg.vertexLimit-2 {
+			if sg.cnt[sg.gid[sg.father[k]]] >= sg.vertexLimit-3 {
 				sg.now++
 				sg.gid[k] = sg.now
 			} else {
