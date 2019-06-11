@@ -28,10 +28,10 @@ func (p *Polygon) Split(vertexLimit int) ([]Polygon, error) {
 	sg := splitterGroup{graph: graph, tris: tris, n: n, gid: make([]int, n), now: 1, cnt: make(map[int]int), father: make([]int, n), vertexLimit: vertexLimit}
 	sg.search(0)
 
-	m := make(map[int]map[uint64]*Point)
+	m := make(map[int]map[uint64]Point)
 	for i, tri := range tris {
 		if _, exists := m[sg.gid[i]]; !exists {
-			m[sg.gid[i]] = make(map[uint64]*Point)
+			m[sg.gid[i]] = make(map[uint64]Point)
 		}
 		m[sg.gid[i]][tri.A.pointHash()] = tri.A
 		m[sg.gid[i]][tri.B.pointHash()] = tri.B
@@ -46,10 +46,10 @@ func (p *Polygon) Split(vertexLimit int) ([]Polygon, error) {
 		sort.Sort(ops)
 		shell := make(LinearRing, len(v)+1)
 		for i, op := range ops {
-			shell[i] = *op.Obj.(*Point)
+			shell[i] = op.Obj.(Point)
 		}
 		shell[len(v)] = shell[0]
-		ps = append(ps, *NewPolygon(shell))
+		ps = append(ps, NewPolygon(shell))
 	}
 	return ps, nil
 }

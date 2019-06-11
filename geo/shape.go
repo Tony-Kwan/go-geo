@@ -7,7 +7,7 @@ var (
 type Shape interface {
 	GetArea() float64
 
-	GetCenter() *Point
+	GetCenter() Point
 
 	GetContext() GeoContext
 
@@ -18,15 +18,15 @@ type AbstractShape struct {
 	ctx GeoContext
 }
 
-func (*AbstractShape) GetArea() float64 {
+func (AbstractShape) GetArea() float64 {
 	panic(ErrUnsupportedOperation)
 }
 
-func (*AbstractShape) GetCenter() *Point {
+func (AbstractShape) GetCenter() Point {
 	panic(ErrUnsupportedOperation)
 }
 
-func (s *AbstractShape) GetContext() GeoContext {
+func (s AbstractShape) GetContext() GeoContext {
 	if s.ctx == nil {
 		return GeoCtx
 	}

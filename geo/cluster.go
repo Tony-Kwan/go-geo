@@ -5,14 +5,14 @@ type Clustering interface {
 }
 
 type Observation struct {
-	Position *Point
+	Position Point
 	Value    interface{}
 }
 
 type Observations []Observation
 
 type ClusterResult struct {
-	Centers  []*Point
+	Centers  []Point
 	Clusters []Observations
 	Labels   []int
 }

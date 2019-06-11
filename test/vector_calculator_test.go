@@ -37,7 +37,7 @@ func Test_MinCoverCircle(t *testing.T) {
 
 func Test_Circumcenter(t *testing.T) {
 	p1, p2, p3 := geo.NewPoint(120.58865815180188, 30.408691824196666, nil), geo.NewPoint(120.67618595808533, 30.24546393634516, nil), geo.NewPoint(120.68281747356784, 30.230453059776593, nil)
-	polygon := geo.NewPolygon([]geo.Point{*p1, *p2, *p3})
+	polygon := geo.NewPolygon([]geo.Point{p1, p2, p3})
 	t.Log(polygon.String())
 	t.Log(calc.Bearing(p1, p2))
 	t.Log(calc.Bearing(p1, p3))
@@ -53,7 +53,7 @@ func Test_Circumcenter(t *testing.T) {
 	t.Log(calc.Distance(c, p2) * geo.EarthRadius)
 	t.Log(calc.Distance(c, p3) * geo.EarthRadius)
 
-	circle, _ := calc.MinCoverCircle(*p2, *p1, *p3)
+	circle, _ := calc.MinCoverCircle(p2, p1, p3)
 	t.Log(circle.GetRadius() * geo.EarthRadius)
 }
 

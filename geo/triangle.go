@@ -8,18 +8,18 @@ import (
 type Triangle struct {
 	AbstractShape
 
-	A *Point
-	B *Point
-	C *Point
+	A Point
+	B Point
+	C Point
 }
 
-func NewTriangle(a, b, c *Point, ctx GeoContext) *Triangle {
-	tri := &Triangle{A: a, B: b, C: c}
+func NewTriangle(a, b, c Point, ctx GeoContext) Triangle {
+	tri := Triangle{A: a, B: b, C: c}
 	tri.ctx = ctx
 	return tri
 }
 
-func (tri *Triangle) GetArea() float64 {
+func (tri Triangle) GetArea() float64 {
 	return tri.GetContext().GetCalculator().Area(tri)
 }
 
@@ -30,16 +30,17 @@ func (tri *Triangle) IsConnected(other *Triangle) bool {
 }
 
 func (tri Triangle) ToPolygon() Polygon {
-	shell := LinearRing{
-		*tri.A,
-		*tri.B,
-		*tri.C,
-		*tri.A,
-	}
-	return *NewPolygon(shell)
+	shell := LinearRing{tri.A, tri.B, tri.C, tri.A}
+	return NewPolygon(shell)
 }
 
-func (tri *Triangle) String() string {
+func (tri Triangle) IsDisjoint(other Triangle) bool {
+	a1, b1, c1 := tri.A.pointHash(), tri.B.pointHash(), tri.C.pointHash()
+	a2, b2, c2 := other.A.pointHash(), other.B.pointHash(), other.C.pointHash()
+	return len(map[uint64]bool{a1: true, b1: true, c1: true, a2: true, b2: true, c2: true}) != 4
+}
+
+func (tri Triangle) String() string {
 	return fmt.Sprintf(
 		"POLYGON((%s %s, %s %s, %s %s, %s %s))",
 		strconv.FormatFloat(tri.A.X(), 'f', -1, 64), strconv.FormatFloat(tri.A.Y(), 'f', -1, 64),
@@ -49,10 +50,10 @@ func (tri *Triangle) String() string {
 	)
 }
 
-func (tri *Triangle) contains(point *Point) bool {
-	v0 := NewVector2(tri.A, tri.C)
-	v1 := NewVector2(tri.A, tri.B)
-	v2 := NewVector2(tri.A, point)
+func (tri Triangle) contains(point Point) bool {
+	v0 := newVector2(tri.A, tri.C)
+	v1 := newVector2(tri.A, tri.B)
+	v2 := newVector2(tri.A, point)
 	dot00 := v0.dot(v0)
 	dot01 := v0.dot(v1)
 	dot02 := v0.dot(v2)

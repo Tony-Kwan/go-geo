@@ -31,23 +31,23 @@ type Polygon struct {
 	//Holes []LinearRing  //TODO: Support holes
 }
 
-func NewPolygon(shell LinearRing) *Polygon {
-	return &Polygon{Shell: shell}
+func NewPolygon(shell LinearRing) Polygon {
+	return Polygon{Shell: shell}
 }
 
-func (p *Polygon) GetNumPoints() int {
+func (p Polygon) GetNumPoints() int {
 	return p.Shell.GetNumPoints()
 }
 
-func (p *Polygon) IsSimple() bool {
+func (p Polygon) IsSimple() bool {
 	return p.Shell.IsSimple()
 }
 
-func (p *Polygon) GetArea() float64 {
+func (p Polygon) GetArea() float64 {
 	return p.GetContext().GetCalculator().Area(p)
 }
 
-func (p *Polygon) Bounds() *Rectangle {
+func (p Polygon) Bounds() Rectangle {
 	rect := NewRectangle(math.MaxFloat64, -math.MaxFloat64, math.MaxFloat64, -math.MaxFloat64, p.GetContext())
 	for _, pt := range p.Shell {
 		rect.minX = math.Min(rect.minX, pt.x)
@@ -58,7 +58,7 @@ func (p *Polygon) Bounds() *Rectangle {
 	return rect
 }
 
-func (p *Polygon) ConvexHull() (*Polygon, error) {
+func (p Polygon) ConvexHull() (Polygon, error) {
 	//TODO: validation
 	n := p.GetNumPoints() - 1
 	points := make([]Point, n)
@@ -92,10 +92,10 @@ func (p *Polygon) ConvexHull() (*Polygon, error) {
 		result[i] = s[i]
 	}
 	result[top+1] = Point{x: result[0].x, y: result[0].y}
-	return &Polygon{Shell: result}, nil
+	return Polygon{Shell: result}, nil
 }
 
-func (p *Polygon) Contain(pt *Point) bool {
+func (p Polygon) Contain(pt Point) bool {
 	n := p.GetNumPoints()
 	var p1, p2 Point
 	var c int
@@ -116,17 +116,17 @@ func (p *Polygon) Contain(pt *Point) bool {
 	return c%2 == 1
 }
 
-func (p *Polygon) CoverByCircles(k int) ([]Circle, error) {
+func (p Polygon) CoverByCircles(k int) ([]Circle, error) {
 	var density = 50
 	ps := make([]Point, 0)
 	n := p.GetNumPoints()
 	calc := p.GetContext().GetCalculator()
 	for i := 0; i < n; i++ {
 		p1, p2 := p.Shell[i], p.Shell[(i+1)%n]
-		dDis := calc.Distance(&p1, &p2) / float64(density)
-		bearing := calc.Bearing(&p1, &p2)
+		dDis := calc.Distance(p1, p2) / float64(density)
+		bearing := calc.Bearing(p1, p2)
 		for j := 0; j < density; j++ {
-			ps = append(ps, *calc.PointOnBearing(&p1, dDis*float64(j), bearing, p.GetContext()))
+			ps = append(ps, calc.PointOnBearing(p1, dDis*float64(j), bearing, p.GetContext()))
 		}
 	}
 
@@ -136,7 +136,7 @@ func (p *Polygon) CoverByCircles(k int) ([]Circle, error) {
 		for j := 1; j < density; j++ {
 			pt := NewPoint(bound.minX+dx*float64(i), bound.minY+dy*float64(j), p.GetContext())
 			if p.Contain(pt) {
-				ps = append(ps, *pt)
+				ps = append(ps, pt)
 			}
 		}
 	}
@@ -148,7 +148,7 @@ func (p *Polygon) CoverByCircles(k int) ([]Circle, error) {
 			Value:    nil,
 		})
 	}
-	km := NewKmeans(&VectorCalculator{})
+	km := NewKmeans(VectorCalculator{})
 	result, err := km.Partition(dataset, k)
 	if err != nil {
 		return nil, err
@@ -158,17 +158,17 @@ func (p *Polygon) CoverByCircles(k int) ([]Circle, error) {
 	for _, cluster := range result.Clusters {
 		pts := make([]Point, len(cluster))
 		for i, o := range cluster {
-			pts[i] = *o.Position
+			pts[i] = o.Position
 		}
 		circle, err := vectorCalc.MinCoverCircle(pts...)
 		if err != nil {
 			return nil, err
 		}
-		circles = append(circles, *circle)
+		circles = append(circles, circle)
 	}
 	return circles, nil
 }
 
-func (p *Polygon) String() string {
+func (p Polygon) String() string {
 	return "POLYGON(" + p.Shell.String()[10:] + ")"
 }

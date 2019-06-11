@@ -25,10 +25,10 @@ func TestTriangle_IsConnected(t *testing.T) {
 	}
 	for i := 0; i < n; i++ {
 		for j := 0; j < n; j++ {
-			if tris[i].IsConnected(&tris[j]) {
-				mat[i][j] = 1
-			} else {
+			if tris[i].IsDisjoint(tris[j]) {
 				mat[i][j] = 0
+			} else {
+				mat[i][j] = 1
 			}
 		}
 	}
