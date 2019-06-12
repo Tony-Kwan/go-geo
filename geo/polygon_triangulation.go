@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/Tony-Kwan/go-geo/geo/internal/ds"
 	"github.com/deckarep/golang-set"
+	"math"
 )
 
 type earClippingPoint struct {
@@ -39,7 +40,6 @@ func (p *Polygon) Triangulate() ([]Triangle, error) {
 		}
 		curr.isEar = checkIsEar(node, points)
 	}
-	//printVertexType(points)
 
 	//clip ear
 	ret := make([]Triangle, 0, n-2)
@@ -78,7 +78,49 @@ func (p *Polygon) Triangulate() ([]Triangle, error) {
 		prev.isEar = checkIsEar(node.Prev, points)
 		//printVertexType(points)
 	}
+	//for i := 2; i < n; i++ {
+	//	ear, err := findBestEar(points)
+	//	if err != nil {
+	//		return nil, err
+	//	}
+	//	curr := ear.Elem.(*earClippingPoint)
+	//	prev := ear.Prev.Elem.(*earClippingPoint)
+	//	next := ear.Next.Elem.(*earClippingPoint)
+	//	ret = append(ret, Triangle{A: &prev.Point, B: &curr.Point, C: &next.Point})
+	//	node = points.RemoveNode(ear)
+	//	next.isReflex = p.checkIsReflex(node)
+	//	prev.isReflex = p.checkIsReflex(node.Prev)
+	//	next.isEar = checkIsEar(node, points)
+	//	prev.isEar = checkIsEar(node.Prev, points)
+	//}
 	return ret, nil
+}
+
+func findBestEar(list *ds.CircularLinkedList) (*ds.Node, error) {
+	var chosen *ds.Node
+	var best, tmp float64
+	var curr, prev, next *ds.Node
+	it := list.Iterator()
+	for it.Next() {
+		if !it.Value().(*earClippingPoint).isEar {
+			continue
+		}
+		curr = it.Node()
+		prev = curr.Prev
+		next = curr.Next
+		v1 := newNEWithPoint(&prev.Elem.(*earClippingPoint).Point)
+		v2 := newNEWithPoint(&curr.Elem.(*earClippingPoint).Point)
+		v3 := newNEWithPoint(&next.Elem.(*earClippingPoint).Point)
+		tmp = math.Abs(v1.cross(v3).unit().dot(v2) + 0.707)
+		if chosen == nil || tmp < best {
+			best = tmp
+			chosen = curr
+		}
+	}
+	if chosen == nil {
+		return nil, errors.New("can not find ear vertex")
+	}
+	return chosen, nil
 }
 
 func (p *Polygon) checkIsReflex(node *ds.Node) bool {
@@ -95,6 +137,10 @@ func (p *Polygon) checkIsReflex(node *ds.Node) bool {
 }
 
 func checkIsEar(node *ds.Node, list *ds.CircularLinkedList) bool {
+	if list.Size() == 3 {
+		return true
+	}
+
 	curr := node.Elem.(*earClippingPoint)
 	if curr.isReflex {
 		return false
