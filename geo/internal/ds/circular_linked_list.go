@@ -130,3 +130,7 @@ func (it *Iterator) Value() interface{} {
 func (it *Iterator) Index() int {
 	return it.index
 }
+
+func (it *Iterator) Node() *Node {
+	return it.node
+}

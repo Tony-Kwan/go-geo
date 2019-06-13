@@ -1,12 +1,16 @@
 package geo
 
 import (
+	"fmt"
 	"github.com/Tony-Kwan/go-geo/geo/internal/ds"
 	"github.com/pkg/errors"
 	"sort"
 )
 
 func (p *Polygon) Split(vertexLimit int) ([]Polygon, error) {
+	if vertexLimit < 4 {
+		return nil, fmt.Errorf("wrong vertexLimit: expect>3, found=%d", vertexLimit)
+	}
 	order := make(map[uint64]int)
 	vertexCnt := len(p.Shell) - 1
 	for i := 0; i < vertexCnt; i++ {
