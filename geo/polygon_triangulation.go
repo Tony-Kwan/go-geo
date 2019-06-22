@@ -86,7 +86,7 @@ func (p *Polygon) Triangulate() ([]Triangle, error) {
 	//	curr := ear.Elem.(*earClippingPoint)
 	//	prev := ear.Prev.Elem.(*earClippingPoint)
 	//	next := ear.Next.Elem.(*earClippingPoint)
-	//	ret = append(ret, Triangle{A: &prev.Point, B: &curr.Point, C: &next.Point})
+	//	ret = append(ret, Triangle{A: prev.Point, B: curr.Point, C: next.Point})
 	//	node = points.RemoveNode(ear)
 	//	next.isReflex = p.checkIsReflex(node)
 	//	prev.isReflex = p.checkIsReflex(node.Prev)
