@@ -201,13 +201,13 @@ func (r *WktReader) readPolygon() (geo.Polygon, error) {
 		return geo.NewPolygon(make(geo.LinearRing, 0)), nil
 	}
 
-	rings := make([][]geo.Point, 0)
+	rings := make([]geo.LinearRing, 0)
 	for {
 		pts, err := r.readLineString()
 		if err != nil {
 			return geo.Polygon{}, err
 		}
-		rings = append(rings, pts)
+		rings = append(rings, geo.LinearRing(pts))
 		if tkt, err = r.getNextCommaOfRightParen(); err != nil {
 			return geo.Polygon{}, err
 		} else if strings.Compare(tkt, tokenRightParen) == 0 {
@@ -218,7 +218,11 @@ func (r *WktReader) readPolygon() (geo.Polygon, error) {
 		return geo.NewPolygon(make(geo.LinearRing, 0)), nil
 	}
 
-	return geo.NewPolygon(rings[0]), nil
+	if len(rings) == 1 {
+		return geo.NewPolygon(rings[0]), nil
+	} else {
+		return geo.NewPolygon(rings[0], rings[1:]...), nil
+	}
 }
 
 func (r *WktReader) getNextEmptyOrLeftParen() (string, error) {

@@ -45,6 +45,23 @@ func (l *CircularLinkedList) Add(e interface{}) *CircularLinkedList {
 	return l
 }
 
+func (l *CircularLinkedList) Insert(node *Node, e interface{}) *CircularLinkedList {
+	if node == nil {
+		return l
+	}
+	newNode := &Node{
+		Elem: e,
+		Prev: node,
+		Next: node.Next,
+	}
+	if node.Next != nil {
+		node.Next.Prev = newNode
+	}
+	node.Next = newNode
+	l.size++
+	return l
+}
+
 func (l *CircularLinkedList) Remove(idx int) *Node {
 	if idx >= l.size || idx < 0 {
 		return nil

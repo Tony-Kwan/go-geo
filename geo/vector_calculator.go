@@ -111,7 +111,7 @@ func (vc VectorCalculator) MinCoverCircle(points ...Point) (Circle, error) {
 	//})
 	c, r := ps[0], 0.
 	var err error
-	const eps = E8
+	const eps = 1e-8
 	for i := 1; i < n; i++ {
 		if vc.Distance(ps[i], c) > r+eps {
 			c, r = ps[i], 0.

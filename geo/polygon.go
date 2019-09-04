@@ -28,11 +28,11 @@ type Polygon struct {
 	AbstractShape
 
 	Shell LinearRing
-	//Holes []LinearRing  //TODO: Support holes
+	Holes []LinearRing
 }
 
-func NewPolygon(shell LinearRing) Polygon {
-	return Polygon{Shell: shell}
+func NewPolygon(shell LinearRing, holes ...LinearRing) Polygon {
+	return Polygon{Shell: shell, Holes: holes}
 }
 
 func (p Polygon) GetNumPoints() int {
@@ -174,5 +174,5 @@ func (p Polygon) CoverByCircles(k int) ([]Circle, error) {
 }
 
 func (p Polygon) String() string {
-	return "POLYGON(" + p.Shell.String()[10:] + ")"
+	return "POLYGON(" + p.Shell.String()[11:] + ")"
 }

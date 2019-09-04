@@ -16,9 +16,58 @@ type earClippingPoint struct {
 	tmp int
 }
 
-// O(n²)
-func (p *Polygon) Triangulate() ([]Triangle, error) {
+func (p Polygon) triangulateWithHole() (tris []Triangle, err error) {
+	shell := p.Shell.MakeCCW()[:p.Shell.GetNumPoints()-1]
+	hole := p.Holes[0].MakeCW()[:p.Holes[0].GetNumPoints()-1]
+
+	for j, holePoint := range hole {
+		var i int
+		minDis := math.MaxFloat64
+		calc := p.GetContext().GetCalculator()
+		for k := 0; k < shell.GetNumPoints(); k++ {
+			dis := calc.Distance(holePoint, shell[k])
+			if dis < minDis {
+				minDis = dis
+				i = k
+			}
+		}
+
+		if i == shell.GetNumPoints() || j == hole.GetNumPoints() {
+			return nil, errors.New("can not triangulate")
+		}
+		ring := make(LinearRing, 0)
+		ring = append(ring, shell[i])
+		for ii := 1; ii <= shell.GetNumPoints(); ii++ {
+			ring = append(ring, shell[(ii+i)%shell.GetNumPoints()])
+		}
+		ring = append(ring, hole[j])
+		for jj := 1; jj <= hole.GetNumPoints(); jj++ {
+			ring = append(ring, hole[(jj+j)%hole.GetNumPoints()])
+		}
+		ring = append(ring, ring[0])
+		plg := NewPolygon(ring)
+		//fmt.Println("triangulateWithHole:\n", plg)
+		tris, err = plg.triangulate()
+		if err == nil {
+			break
+		}
+	}
+	return
+}
+
+func (p Polygon) Triangulate() ([]Triangle, error) {
 	//TODO: validate polygon
+	if len(p.Holes) > 1 {
+		return nil, errors.New("unsupported multiple holes")
+	}
+	if len(p.Holes) == 1 {
+		return p.triangulateWithHole()
+	}
+	return p.triangulate()
+}
+
+// O(n²)
+func (p Polygon) triangulate() ([]Triangle, error) {
 	var shell = p.Shell.MakeCCW()[:p.Shell.GetNumPoints()-1]
 	n := shell.GetNumPoints()
 	points := ds.NewCircularLinkedList()
@@ -61,10 +110,10 @@ func (p *Polygon) Triangulate() ([]Triangle, error) {
 				for it.Next() {
 					pt := it.Value().(*earClippingPoint)
 					shell = append(shell, pt.Point)
-					fmt.Println(pt.isReflex, pt.isEar)
+					//fmt.Println(pt.isReflex, pt.isEar)
 				}
 				shell = append(shell, shell[0])
-				fmt.Println(NewPolygon(shell).String())
+				//fmt.Println(NewPolygon(shell).String())
 				return nil, errors.New("infinite loop: program should not run here")
 			}
 			continue

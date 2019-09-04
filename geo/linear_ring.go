@@ -22,6 +22,7 @@ func (r LinearRing) IsSimple() bool {
 	return true //TODO: impl
 }
 
+// Shoelace formula: https://en.wikipedia.org/wiki/Shoelace_formula
 func (r LinearRing) IsCCW() bool {
 	var sum float64
 	var nextPoint Point
@@ -37,6 +38,21 @@ func (r LinearRing) MakeCCW() LinearRing {
 	n := r.GetNumPoints()
 	ret := make(LinearRing, n)
 	if !r.IsCCW() {
+		for i := range r {
+			ret[n-i-1] = r[i]
+		}
+	} else {
+		for i := range r {
+			ret[i] = r[i]
+		}
+	}
+	return ret
+}
+
+func (r LinearRing) MakeCW() LinearRing {
+	n := r.GetNumPoints()
+	ret := make(LinearRing, n)
+	if r.IsCCW() {
 		for i := range r {
 			ret[n-i-1] = r[i]
 		}

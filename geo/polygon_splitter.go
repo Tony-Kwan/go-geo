@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"github.com/Tony-Kwan/go-geo/geo/internal/ds"
 	"github.com/pkg/errors"
-	"sort"
 )
 
 func (p *Polygon) Split(vertexLimit int) ([]Polygon, error) {
@@ -25,36 +24,27 @@ func (p *Polygon) Split(vertexLimit int) ([]Polygon, error) {
 	graph := ds.New2DBoolSlice(n, n)
 	for i := 0; i < n; i++ {
 		for j := i + 1; j < n; j++ {
-			graph[i][j] = tris[i].IsConnected(&tris[j])
+			graph[i][j] = tris[i].IsConnected(tris[j])
 			graph[j][i] = graph[i][j]
 		}
 	}
-	sg := splitterGroup{graph: graph, tris: tris, n: n, gid: make([]int, n), now: 1, cnt: make(map[int]int), father: make([]int, n), vertexLimit: vertexLimit}
+	sg := newSplitterGroup(graph, tris, n, vertexLimit)
 	sg.search(0)
-
-	m := make(map[int]map[uint64]Point)
-	for i, tri := range tris {
-		if _, exists := m[sg.gid[i]]; !exists {
-			m[sg.gid[i]] = make(map[uint64]Point)
-		}
-		m[sg.gid[i]][tri.A.pointHash()] = tri.A
-		m[sg.gid[i]][tri.B.pointHash()] = tri.B
-		m[sg.gid[i]][tri.C.pointHash()] = tri.C
+	if len(sg.errs) != 0 {
+		return nil, sg.errs[len(sg.errs)-1]
 	}
-	ps := make([]Polygon, 0)
-	for _, v := range m {
-		ops, i := make(ds.OrderObjs, len(v)), 0
-		for _, p := range v {
-			ops[i], i = ds.OrderObj{Obj: p, Order: order[p.pointHash()]}, i+1
+
+	ps := make([]Polygon, 0, sg.now)
+	for _, list := range sg.polygonMap {
+		shell := make(LinearRing, 0, list.Size()+1)
+		it := list.Iterator()
+		for it.Next() {
+			shell = append(shell, it.Value().(Point))
 		}
-		sort.Sort(ops)
-		shell := make(LinearRing, len(v)+1)
-		for i, op := range ops {
-			shell[i] = op.Obj.(Point)
-		}
-		shell[len(v)] = shell[0]
+		shell = append(shell, shell[0])
 		ps = append(ps, NewPolygon(shell))
 	}
+
 	return ps, nil
 }
 
@@ -67,50 +57,101 @@ type splitterGroup struct {
 	cnt         map[int]int
 	father      []int
 	vertexLimit int
+
+	polygonMap map[int]*ds.CircularLinkedList
+	errs       []error
+}
+
+func newSplitterGroup(graph ds.TwoDimBoolSlice, tris []Triangle, n, vertexLimit int) *splitterGroup {
+	return &splitterGroup{
+		graph:       graph,
+		tris:        tris,
+		n:           n,
+		gid:         make([]int, n),
+		now:         1,
+		cnt:         make(map[int]int),
+		father:      make([]int, n),
+		vertexLimit: vertexLimit,
+		polygonMap:  make(map[int]*ds.CircularLinkedList),
+	}
 }
 
 func (sg *splitterGroup) search(k int) {
+	sg.gid[k] = 1
+	sg.cnt[1] = 1
+
+	list := ds.NewCircularLinkedList()
+	list.Add(sg.tris[k].A)
+	list.Add(sg.tris[k].B)
+	list.Add(sg.tris[k].C)
+	sg.polygonMap[1] = list
+
 	sg.dfs(k)
-	//sg.bfs(k)
 }
 
 func (sg *splitterGroup) dfs(k int) {
 	for i := 0; i < sg.n; i++ {
-		if sg.gid[i] == 0 && sg.graph[k][i] {
-			if sg.cnt[sg.gid[k]] >= sg.vertexLimit-3 {
-				sg.now++
-				sg.gid[i] = sg.now
-			} else {
-				sg.gid[i] = sg.gid[k]
-			}
-			sg.cnt[sg.gid[i]]++
-			sg.search(i)
+		if sg.gid[i] != 0 || !sg.graph[k][i] {
+			continue
 		}
-	}
-}
 
-func (sg *splitterGroup) bfs(k int) {
-	sg.father[0] = -1
-	q, pos := []int{0}, 0
-	for pos < len(q) {
-		k, pos = q[pos], pos+1
-		if k == 0 {
-			sg.gid[k] = sg.now
+		var notConnectPoint *Point
+		if !sg.tris[k].isVertex(sg.tris[i].A) {
+			notConnectPoint = &sg.tris[i].A
+		} else if !sg.tris[k].isVertex(sg.tris[i].B) {
+			notConnectPoint = &sg.tris[i].B
+		} else if !sg.tris[k].isVertex(sg.tris[i].C) {
+			notConnectPoint = &sg.tris[i].C
+		}
+		flag := false
+		if notConnectPoint != nil {
+			for l := 0; l < sg.n; l++ {
+				if sg.gid[l] == sg.now && sg.tris[l].isVertex(*notConnectPoint) {
+					flag = true
+					break
+				}
+			}
+		}
+		if sg.cnt[sg.gid[k]] >= sg.vertexLimit-3 || flag {
+			sg.now++
+			sg.gid[i] = sg.now
+
+			list := ds.NewCircularLinkedList()
+			list.Add(sg.tris[i].A)
+			list.Add(sg.tris[i].B)
+			list.Add(sg.tris[i].C)
+			sg.polygonMap[sg.now] = list
 		} else {
-			if sg.cnt[sg.gid[sg.father[k]]] >= sg.vertexLimit-3 {
-				sg.now++
-				sg.gid[k] = sg.now
-			} else {
-				sg.gid[k] = sg.gid[sg.father[k]]
+			sg.gid[i] = sg.gid[k]
+
+			tri := sg.tris[i]
+			list := sg.polygonMap[sg.gid[i]]
+			it := list.Iterator()
+			flag = false
+			for it.Next() {
+				node := it.Node()
+				curr := node.Elem.(Point)
+				next := node.Next.Elem.(Point)
+				if (curr.Equals(tri.A) && next.Equals(tri.B)) || (curr.Equals(tri.B) && next.Equals(tri.A)) {
+					list.Insert(it.Node(), tri.C)
+					flag = true
+					break
+				} else if (curr.Equals(tri.B) && next.Equals(tri.C)) || (curr.Equals(tri.C) && next.Equals(tri.B)) {
+					list.Insert(it.Node(), tri.A)
+					flag = true
+					break
+				} else if (curr.Equals(tri.A) && next.Equals(tri.C)) || (curr.Equals(tri.C) && next.Equals(tri.A)) {
+					list.Insert(it.Node(), tri.B)
+					flag = true
+					break
+				}
+			}
+			if !flag {
+				sg.errs = append(sg.errs, errors.New("can not insert point to list"))
 			}
 		}
-		sg.cnt[sg.gid[k]]++
-		for i := 0; i < sg.n; i++ {
-			if sg.gid[i] == 0 && sg.graph[k][i] {
-				q = append(q, i)
-				sg.father[i] = k
-				sg.gid[i] = -1
-			}
-		}
+
+		sg.cnt[sg.gid[i]]++
+		sg.dfs(i)
 	}
 }
