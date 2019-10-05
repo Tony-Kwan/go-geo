@@ -8,6 +8,14 @@ import (
 
 type LineString []Point
 
+func NewLineString(points ...Point) LineString {
+	l := make(LineString, len(points))
+	for i := range points {
+		l[i] = points[i]
+	}
+	return l
+}
+
 func (r LineString) GetNumPoints() int { return len(r) }
 
 func (r LineString) String() string {

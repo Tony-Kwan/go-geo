@@ -9,6 +9,7 @@ import (
 var (
 	zero   = vector3{}
 	nNorth = vector3{x: 0, y: 0, z: 1}
+	nSouth = vector3{x: 0, y: 0, z: -1}
 )
 
 //vector represents a point in R3
@@ -73,8 +74,9 @@ func (v vector3) dot(u vector3) float64 {
 }
 
 func (v vector3) angleTo(u, n vector3) float64 {
-	sign := sign(v.cross(u).dot(n))
-	return Atan2(v.cross(u).norm()*float64(sign), v.dot(u))
+	sin := v.cross(u).norm() * float64(sign(v.cross(u).dot(n)))
+	cos := v.dot(u)
+	return Atan2(sin, cos)
 }
 
 func (v vector3) ApproxEqual(u vector3) bool {

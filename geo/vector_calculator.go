@@ -43,8 +43,7 @@ func (vc VectorCalculator) Bearing(from, to Point) float64 {
 func (vc VectorCalculator) bearing(from, to Point, n vector3) float64 {
 	nFrom, nTo := newNE(from.X(), from.Y()), newNE(to.X(), to.Y())
 	c1, c2 := nFrom.cross(nTo), nFrom.cross(n)
-	bearing := c1.angleTo(c2, n)
-	return Mod(ToDegrees(bearing)+360., 360.)
+	return Mod(ToDegrees(c1.angleTo(c2, nFrom))+360., 360.)
 }
 
 func (VectorCalculator) PointOnBearing(from Point, distRad, bearingDeg float64, ctx GeoContext) Point {
@@ -135,16 +134,23 @@ func (vc VectorCalculator) MinCoverCircle(points ...Point) (Circle, error) {
 	return NewCircle(c.X(), c.Y(), r, nil), nil
 }
 
-func (vc VectorCalculator) Circumcenter(pa, pb, pc Point) (Point, error) {
-	p12Mid, p23Mid := vc.Mid(pa, pb, nil), vc.Mid(pb, pc, nil)
-	bearing12Mid2 := vc.Bearing(p12Mid, pb)
-	bearing23Mid3 := vc.Bearing(p23Mid, pc)
+func (vc VectorCalculator) Circumcenter(p1, p2, p3 Point) (Point, error) {
+	p12Mid, p23Mid := vc.Mid(p1, p2, nil), vc.Mid(p2, p3, nil)
+	bearing12Mid2 := vc.Bearing(p12Mid, p2)
+	bearing23Mid3 := vc.Bearing(p23Mid, p3)
 	c1, c2 := p12Mid.greatCircle(bearing12Mid2+90), p23Mid.greatCircle(bearing23Mid3+90)
 	i1, i2, err := vc.intersectionOfTwoGreatCircle(c1, c2)
 	if err != nil {
 		return Point{}, err
 	}
-	nMid := newNEWithPoint(vc.MeanPosition(pa, pb, pc))
+	//clipboard.WriteAll(fmt.Sprintf("GEOMETRYCOLLECTION(%s,%s,%s,%s,%s,%s)", NewPolygon(NewRing(p1, p2, p3)),
+	//	NewLineString(p12Mid, vc.PointOnBearing(p12Mid, 0.0002, bearing12Mid2+90, p1.GetContext())),
+	//	NewLineString(p23Mid, vc.PointOnBearing(p23Mid, 0.0002, bearing23Mid3+90, p1.GetContext())),
+	//	i1.toPoint().String(),
+	//	vc.PointOnBearing(p12Mid, vc.Distance(p12Mid, p2), bearing12Mid2, p1.GetContext()),
+	//	p2,
+	//))
+	nMid := newNEWithPoint(vc.MeanPosition(p1, p2, p3))
 	if nMid.dot(i1) > 0 {
 		return i1.toPoint(), nil
 	}

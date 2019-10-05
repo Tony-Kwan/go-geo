@@ -8,6 +8,10 @@ import (
 
 type LinearRing LineString
 
+func NewRing(points ...Point) LinearRing {
+	return LinearRing(points)
+}
+
 func (r LinearRing) GetNumPoints() int { return len(r) }
 
 func (r LinearRing) IsValid() bool {
